@@ -16,12 +16,14 @@ struct SqShape : public IShape {
     sf::RectangleShape* rectangle2;
     sf::RectangleShape* rectangle3;
     sf::RectangleShape* rectangle4;
+    sf::Texture shapeTexture;
+
     std::vector<sf::RectangleShape*> shapeContainer;
-    sf::Color sqaureColor  = sf::Color (100, 250, 50);
     sf::Color outlineColor = sf::Color (255, 255, 255);
     sf::Vector2f shapeVelocity;
     sf::Vector2f shapeCenter;
     DisplayContainer* dContainer;
+    sf::Color sqaureColor = sf::Color (100, 50, 250);
 
     bool isMoving;
     bool isBroken;
@@ -32,6 +34,8 @@ struct SqShape : public IShape {
       rectangle2 (new sf::RectangleShape ()), rectangle3 (new sf::RectangleShape ()),
       rectangle4 (new sf::RectangleShape ()) {
         shapeVelocity = sf::Vector2f (SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
+        shapeTexture.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SHAPE_TEXTURE_FILE)), sf::IntRect({0,0},{32,32}));
+
         isBroken = false;
         // in the beginning, all shapes are moving
         isMoving = true;
@@ -44,15 +48,22 @@ struct SqShape : public IShape {
         rectangle1->setFillColor (sqaureColor);
         rectangle1->setOutlineColor (outlineColor);
         rectangle1->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
+        rectangle1->setTexture(&shapeTexture);
+
         rectangle2->setFillColor (sqaureColor);
         rectangle2->setOutlineColor (outlineColor);
         rectangle2->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
+        rectangle2->setTexture(&shapeTexture);
+
         rectangle3->setFillColor (sqaureColor);
         rectangle3->setOutlineColor (outlineColor);
         rectangle3->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
+        rectangle3->setTexture(&shapeTexture);
+
         rectangle4->setFillColor (sqaureColor);
         rectangle4->setOutlineColor (outlineColor);
         rectangle4->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
+        rectangle4->setTexture(&shapeTexture);
 
         shapeContainer.push_back (rectangle1);
         shapeContainer.push_back (rectangle2);
@@ -120,8 +131,8 @@ struct SqShape : public IShape {
 
     virtual void drawShape (sf::RenderWindow& displayWindow) override {
         // set the velocity vector
-        shapeVelocity.x = 0;
-        shapeVelocity.y = 0.1f;
+        shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
+        shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
 
         if (rectangle1 != nullptr) {
             auto p1 = rectangle1->getPosition () + shapeVelocity;
@@ -172,7 +183,8 @@ struct SqShape : public IShape {
         // square shape does not need rotation
         if (sf::Keyboard::Left == k) {
             // rotate shape velocity vector to <- direction and move within window
-            shapeVelocity.x = -26.f;
+            shapeVelocity.x = SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+            shapeVelocity.x = -shapeVelocity.x;
             shapeVelocity.y = 0;
 
             auto p1 = rectangle1->getPosition () + shapeVelocity;
@@ -193,7 +205,7 @@ struct SqShape : public IShape {
             }
         } else if (sf::Keyboard::Right == k) {
             // rotate shape velocity vector to -> direction and move within window
-            shapeVelocity.x = 26.f;
+            shapeVelocity.x = SQUARE_SIDE_LENGTH_WITH_OUTLINE;
             shapeVelocity.y = 0;
 
             auto p1 = rectangle1->getPosition () + shapeVelocity;
@@ -212,42 +224,7 @@ struct SqShape : public IShape {
                 // shift the center
                 shapeCenter += shapeVelocity;
             }
-        } else if (sf::Keyboard::Space == k) {
-
-            // rotate clockwise 90 degrees rectangle3
-            auto vec3 = rectangle3->getPosition () - shapeCenter;
-            auto temp = vec3.x;
-            vec3.x    = static_cast<int> (-vec3.y);
-            vec3.y    = static_cast<int> (temp);
-            vec3 += shapeCenter;
-
-            // rotate clockwise 90 degrees rectangle2
-            auto vec2 = rectangle2->getPosition () - shapeCenter;
-            temp      = vec2.x;
-            vec2.x    = static_cast<int> (-vec2.y);
-            vec2.y    = static_cast<int> (temp);
-            vec2 += shapeCenter;
-
-            // rotate clockwise 90 degrees rectangle2
-            auto vec4 = rectangle4->getPosition () - shapeCenter;
-            temp      = vec4.x;
-            vec4.x    = static_cast<int> (-vec4.y);
-            vec4.y    = static_cast<int> (temp);
-            vec4 += shapeCenter;
-
-            // rotate clockwise 90 degrees rectangle2
-            auto vec1 = rectangle1->getPosition () - shapeCenter;
-            temp      = vec1.x;
-            vec1.x    = static_cast<int> (-vec1.y);
-            vec1.y    = static_cast<int> (temp);
-            vec1 += shapeCenter;
-            if (isWithinDrawWindow (vec1) && isWithinDrawWindow (vec2) &&
-            isWithinDrawWindow (vec3) && isWithinDrawWindow (vec4)) {
-                rectangle1->setPosition (vec1);
-                rectangle2->setPosition (vec2);
-                rectangle3->setPosition (vec3);
-                rectangle4->setPosition (vec4);
-            }
         }
+        
     }
 };

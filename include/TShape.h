@@ -16,6 +16,8 @@ struct TShape : public IShape {
     sf::RectangleShape* rectangle2;
     sf::RectangleShape* rectangle3;
     sf::RectangleShape* rectangle4;
+    sf::Texture shapeTexture;
+
     std::vector<sf::RectangleShape*> shapeContainer;
     sf::Color sqaureColor = sf::Color (100, 250, 50);
 
@@ -45,6 +47,8 @@ struct TShape : public IShape {
       rectangle2 (new sf::RectangleShape ()), rectangle3 (new sf::RectangleShape ()),
       rectangle4 (new sf::RectangleShape ()) {
         shapeVelocity = sf::Vector2f (SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
+        shapeTexture.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SHAPE_TEXTURE_FILE)), sf::IntRect({0,0},{32,32}));
+
         isMoving = true;
         isBroken = false;
 
@@ -53,18 +57,21 @@ struct TShape : public IShape {
         rectangle3->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
         rectangle4->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
 
-        rectangle1->setFillColor (sqaureColor);
         rectangle1->setOutlineColor (outlineColor);
         rectangle1->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-        rectangle2->setFillColor (sqaureColor);
+        rectangle1->setTexture(&shapeTexture);
+
         rectangle2->setOutlineColor (outlineColor);
         rectangle2->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-        rectangle3->setFillColor (sqaureColor);
+        rectangle2->setTexture(&shapeTexture);
+
         rectangle3->setOutlineColor (outlineColor);
         rectangle3->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-        rectangle4->setFillColor (sqaureColor);
+        rectangle3->setTexture(&shapeTexture);
+
         rectangle4->setOutlineColor (outlineColor);
         rectangle4->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
+        rectangle4->setTexture(&shapeTexture);
 
         shapeContainer.push_back (rectangle1);
         shapeContainer.push_back (rectangle2);
@@ -134,8 +141,8 @@ struct TShape : public IShape {
 
     virtual void drawShape (sf::RenderWindow& displayWindow) override {
         // set the velocity vector
-        shapeVelocity.x = 0;
-        shapeVelocity.y = 0.1f;
+        shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
+        shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
 
         if (rectangle1 != nullptr) {
             auto p1 = rectangle1->getPosition () + shapeVelocity;
@@ -186,7 +193,8 @@ struct TShape : public IShape {
         // square shape does not need rotation
         if (sf::Keyboard::Left == k) {
             // rotate shape velocity vector to <- direction and move within window
-            shapeVelocity.x = -26.f;
+            shapeVelocity.x = SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+            shapeVelocity.x = -shapeVelocity.x;
             shapeVelocity.y = 0;
 
             auto p1 = rectangle1->getPosition () + shapeVelocity;
@@ -207,7 +215,7 @@ struct TShape : public IShape {
             }
         } else if (sf::Keyboard::Right == k) {
             // rotate shape velocity vector to -> direction and move within window
-            shapeVelocity.x = 26.f;
+            shapeVelocity.x = SQUARE_SIDE_LENGTH_WITH_OUTLINE;
             shapeVelocity.y = 0;
 
             auto p1 = rectangle1->getPosition () + shapeVelocity;

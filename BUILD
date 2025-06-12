@@ -30,7 +30,8 @@ cc_binary(
     ],
     defines = [
         'FONT_FILE_PATH="/TetrisGame/movistar-text/Movistar Text Regular.ttf"',
-        'WINDOW_WIDTH=800',
+        'SHAPE_TEXTURE_FILE="/TetrisGame/textures/brick_texture.png"',
+        'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        
     ],
     copts = ["-std=c++17"]

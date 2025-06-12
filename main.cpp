@@ -20,10 +20,11 @@ int main () {
     fontContainer.addFont (GameFontStrings::SCORE_INITIAL_VALUE,
     FONT_SCORE_VALUE_X, FONT_SCORE_VALUE_Y);
     fontContainer.addFont (GameFontStrings::GAME_OVER, FONT_GAMEOVER_X, FONT_GAMEOVER_Y);
+    ShapeGenerator shapegen;
+    DisplayContainer displayContainer (fontContainer, shapegen);
 
-    DisplayContainer displayContainer (fontContainer);
-
-    StageManager sMgr;
+    StageManager sMgr(fontContainer, displayWindow);
+    bool gamePause = false;
 
     while (displayWindow.isOpen ()) {
         sf::Event event;
@@ -45,15 +46,26 @@ int main () {
         } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Right)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));
             if (sf::Keyboard::isKeyPressed (sf::Keyboard::Right)) {
-                displayContainer.handleKey (sf::Keyboard::Right);
+                //sMgr.handleUserInput (sf::Keyboard::Right);
+                displayContainer.handleKey(sf::Keyboard::Right);
             }
+        } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::P)) {
+            gamePause = true;
+        } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::R)) {
+            gamePause = false;
         }
 
-        sMgr.generateStageShapes ();
-        sMgr.processShapes ();
-        sMgr.processStage ();
+        // 1. check stage para
+        // 2. generate stage shapes
+        // 3. process stage
+        // sMgr.checkStageStatus();
+        // sMgr.generateStageScreen();
+        // sMgr.processStageShapes();
 
-        displayContainer.generateAndDrawShape (displayWindow);
+        if(!gamePause)
+        {
+            displayContainer.generateAndDrawShape (displayWindow);
+        }
 
         displayContainer.processshapes ();
 

@@ -4,12 +4,25 @@
 
 class StageManager {
     unsigned int currentStageNumber;
+    ShapeGenerator shapeGenerator;
+
     DisplayContainer disPlayContainer;
+    sf::RenderWindow& displayWindow;
+    std::vector<unsigned int> winScoreForStage;
+    void setStageParameters();
+
+    std::vector<IShape*> getAllowedShapedOfStage ();
+
+    void setWinningScoreForstage();
 
     public:
-    StageManager ();
+    StageManager (FontContainer& fCon, sf::RenderWindow& window);
+
+    void checkStageStatus();
 
     void generateStageScreen ();
 
-    std::vector<IShape*> getAllowedShapedOfStage ();
+    void handleUserInput(sf::Keyboard::Key);
+
+    void processStageShapes();
 };

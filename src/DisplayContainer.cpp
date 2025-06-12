@@ -5,6 +5,22 @@ bool DisplayContainer::isGameOver () {
     return (individualComponentContainer[FIRST_ROW_Y].size () > 0);
 }
 
+int DisplayContainer::getAllowedYVal(float yCoordinate)
+{
+    int minIdx = -1;
+    int minDiff = 1000;
+
+    for(std::size_t i = 0; i < rowYCoordinate.size(); i++)
+    {
+        if(abs(rowYCoordinate[i]-yCoordinate) < minDiff)
+        {
+            minDiff = abs(rowYCoordinate[i]-yCoordinate);
+            minIdx = i;
+        }
+    }
+    return rowYCoordinate[minIdx];
+}
+
 int DisplayContainer::getScore () {
     return scoreValue;
 }
@@ -37,7 +53,7 @@ void DisplayContainer::processshapes () {
     if (!moveStatus) {
         // mapping individual component of shape to its y co-ordinate
         for (auto& s : lastShape->getShapeContianer ()) {
-            auto yVal = static_cast<int> (s->getPosition ().y);
+            auto yVal = getAllowedYVal(s->getPosition ().y);
             auto lowerBoundPtr = individualComponentContainer.lower_bound (yVal);
 
             if (lowerBoundPtr != individualComponentContainer.end ()) {
@@ -100,14 +116,16 @@ int DisplayContainer::getLowestYVal (int x, int refY) {
         if (it->first > refY) {
             bool found = false;
             for (auto& element : it->second) {
-                if (static_cast<int> (element.first->getPosition ().x) == x) {
+                if (abs(element.first->getPosition ().x - x) <= 3) {
                     it--;
+                    std::cout<<"x:"<<x<<"-->return:"<<it->first<<std::endl;
                     return it->first;
                 }
             }
         }
     }
-    return 577;
+    std::cout<<"not found: x:"<<x<<"-->return:"<<rowYCoordinate.front()<<std::endl;
+    return rowYCoordinate.front();
 }
 
 void DisplayContainer::shiftStructureDownward () {
@@ -116,27 +134,27 @@ void DisplayContainer::shiftStructureDownward () {
     int fullRowYVal    = 0;
     for (auto it = individualComponentContainer.rbegin ();
          it != individualComponentContainer.rend (); it++) {
-        auto searchPtr = it;
-        while (searchPtr->second.size () == 20) {
+        if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
+            std::cout<<"Removing row at:"<<it->first<<std::endl;
             shiftRequired = true;
             if (fullRowYVal == 0) {
                 fullRowYVal = it->first;
             }
-            for (auto& fRC : searchPtr->second) {
+            for (auto& fRC : it->second) {
                 delete fRC.first;
                 fRC.first = nullptr;
-                fRC.second->setBroken ();
+                fRC.second->setBroken();
             }
-            searchPtr->second.clear ();
-            searchPtr++;
-            scoreValue += 10;
-        }
-        if (shiftRequired && startShiftYVal == 0) {
-            startShiftYVal = searchPtr->first;
+            it->second.clear();
+            std::cout<<"cleared:"<<it->first<<std::endl;
+            scoreValue += SCORE_PER_ROW;
+            it++;
+            startShiftYVal = it->first;
+            std::cout<<"start shifting from:"<<startShiftYVal<<"  to:"<<fullRowYVal<<std::endl;
             break;
         }
     }
-
+    std::cout<<"size after clear:"<<individualComponentContainer[fullRowYVal].size()<<std::endl;
     if (shiftRequired) {
         for (auto it = individualComponentContainer.rbegin ();
              it != individualComponentContainer.rend (); it++) {
@@ -148,12 +166,13 @@ void DisplayContainer::shiftStructureDownward () {
                         lowestY = getLowestYVal (xVal, it->first);
                     } else {
                         lowestY = fullRowYVal;
-                        fullRowYVal -= 26;
                     }
                     s.first->setPosition (xVal, lowestY);
                     individualComponentContainer[lowestY].push_back (s);
                 }
                 individualComponentContainer[startShiftYVal].clear ();
+                startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+                fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
             }
         }
     }
@@ -164,7 +183,8 @@ void DisplayContainer::checkFullRows () {
         bool removeRows = false;
         for (auto it = individualComponentContainer.rbegin ();
              it != individualComponentContainer.rend (); it++) {
-            if (it->second.size () == 20) {
+            std::cout<<it->first<<"---"<<it->second.size()<<std::endl;
+            if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
                 shiftStructureDownward ();
                 removeRows = true;
             }

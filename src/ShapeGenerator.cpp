@@ -72,6 +72,6 @@ void ShapeGenerator::generateShapes () {
     shapeIndexArray[0] = shapeIndexArray[1];
     shapeIndexArray[1] = shapeNumber;
 
-    // shapeIndexArray[0] = 2;
-    // shapeIndexArray[1] = 2;
+    // shapeIndexArray[0] = 1;
+    // shapeIndexArray[1] = 1;
 }
