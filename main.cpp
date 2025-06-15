@@ -20,6 +20,9 @@ int main () {
     fontContainer.addFont (GameFontStrings::SCORE_INITIAL_VALUE,
     FONT_SCORE_VALUE_X, FONT_SCORE_VALUE_Y);
     fontContainer.addFont (GameFontStrings::GAME_OVER, FONT_GAMEOVER_X, FONT_GAMEOVER_Y);
+
+    fontContainer.addFont (GameFontStrings::GAME_PAUSED, GAME_PAUSED_X, GAME_PAUSED_Y);
+
     ShapeGenerator shapegen;
     DisplayContainer displayContainer (fontContainer, shapegen);
 
@@ -35,24 +38,24 @@ int main () {
         }
         if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));
-            if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space)) {
+            if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space) && !gamePause) {                
                 displayContainer.handleKey (sf::Keyboard::Space);
             }
         } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Left)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));
-            if (sf::Keyboard::isKeyPressed (sf::Keyboard::Left)) {
+            if (sf::Keyboard::isKeyPressed (sf::Keyboard::Left) && !gamePause) {
                 displayContainer.handleKey (sf::Keyboard::Left);
             }
         } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Right)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));
-            if (sf::Keyboard::isKeyPressed (sf::Keyboard::Right)) {
+            if (sf::Keyboard::isKeyPressed (sf::Keyboard::Right) && !gamePause) {
                 //sMgr.handleUserInput (sf::Keyboard::Right);
                 displayContainer.handleKey(sf::Keyboard::Right);
             }
         } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::P)) {
-            gamePause = true;
+            displayContainer.setGamePaused();
         } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::R)) {
-            gamePause = false;
+            displayContainer.resetGamePaused();
         }
 
         // 1. check stage para
@@ -61,15 +64,12 @@ int main () {
         // sMgr.checkStageStatus();
         // sMgr.generateStageScreen();
         // sMgr.processStageShapes();
+        displayContainer.generateAndDrawShape (displayWindow);
 
-        if(!gamePause)
-        {
-            displayContainer.generateAndDrawShape (displayWindow);
-        }
+        displayContainer.handleGameState (displayWindow);
 
         displayContainer.processshapes ();
 
-        displayContainer.handleGameState (displayWindow);
     }
 
     return 0;

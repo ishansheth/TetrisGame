@@ -26,7 +26,8 @@ int DisplayContainer::getScore () {
 }
 
 void DisplayContainer::handleKey (sf::Keyboard::Key k) {
-    lastShape->handleKey (k);
+    if(lastShape)
+        lastShape->handleKey (k);
 }
 
 void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
@@ -37,11 +38,16 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
     if (lastShape == nullptr) {
         shapeGen.generateShapes ();
         lastShape = shapeGen.getShape (sf::Vector2f (0, 0), this);
-        nextShape =
-        shapeGen.getNextShape (sf::Vector2f (NEXT_SHAPE_X, NEXT_SHAPE_Y), this);
+        nextShape = shapeGen.getNextShape (sf::Vector2f (NEXT_SHAPE_X, NEXT_SHAPE_Y), this);
     }
-    drawShape (displayWindow);
-    drawNextShape (nextShape, displayWindow);
+
+    for (auto& s : individualComponentContainer) {
+        for (auto& element : s.second) {
+            displayWindow.draw (*(element.first));
+        }
+    }
+    lastShape->drawShape (displayWindow);
+    nextShape->drawShape (displayWindow);
 }
 
 void DisplayContainer::processshapes () {
@@ -69,18 +75,18 @@ void DisplayContainer::processshapes () {
     fContainerRef.setFontString (GameFontStrings::SCORE_INITIAL_VALUE, displayScoreVal);
 }
 
-void DisplayContainer::drawShape (sf::RenderWindow& displayWindow) {
-    for (auto& s : individualComponentContainer) {
-        for (auto& element : s.second) {
-            displayWindow.draw (*(element.first));
-        }
-    }
-    lastShape->drawShape (displayWindow);
-}
+// void DisplayContainer::drawShape (sf::RenderWindow& displayWindow) {
+//     for (auto& s : individualComponentContainer) {
+//         for (auto& element : s.second) {
+//             displayWindow.draw (*(element.first));
+//         }
+//     }
+//     lastShape->drawShape (displayWindow);
+// }
 
-void DisplayContainer::drawNextShape (IShape* shape, sf::RenderWindow& displayWindow) {
-    shape->drawAsNextShape (displayWindow);
-}
+// void DisplayContainer::drawNextShape (IShape* shape, sf::RenderWindow& displayWindow) {
+//     shape->drawAsNextShape (displayWindow);
+// }
 
 // check of falling shape is intersecting with currently displayed shapes
 bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
@@ -210,12 +216,6 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
             }
             it->second.clear ();
         }
-    }
-
-    if (!isGameOverState) {
-        fContainerRef.displayFonts (displayWindow);
-        displayWindow.draw (partitionLine, 2, sf::Lines);
-    } else {
         fContainerRef.displaySingleString (displayWindow, GameFontStrings::GAME_OVER);
         sf::Event event;
 
@@ -231,7 +231,21 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
                 }
             }
         }
+
     }
+    else if(isGamePaused)
+    {
+        fContainerRef.displaySingleString (displayWindow, GameFontStrings::GAME_PAUSED);
+        fContainerRef.displayFonts (displayWindow);
+        displayWindow.draw (partitionLine, 2, sf::Lines);
+    }
+    else if(!isGamePaused && !isGameOverState)
+    {
+        moveShapes();
+        fContainerRef.displayFonts (displayWindow);
+        displayWindow.draw (partitionLine, 2, sf::Lines);
+    }
+
 
     // for (std::size_t i = 0; i < getGridLines().size(); i++)
     // {
@@ -245,4 +259,19 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
 
     displayWindow.display ();
     displayWindow.clear (sf::Color::Black);
+}
+
+void DisplayContainer::moveShapes()
+{
+    lastShape->moveShape();
+}
+
+void DisplayContainer::setGamePaused()
+{
+    isGamePaused = true;
+}
+
+void DisplayContainer::resetGamePaused()
+{
+    isGamePaused = false;
 }

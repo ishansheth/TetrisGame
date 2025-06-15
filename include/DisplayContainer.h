@@ -49,12 +49,17 @@ class DisplayContainer {
     bool moveStatus;
     std::map<int, int> blockCountInRow;
     int scoreValue;
+
+    void dropShape();
+
+    // state variables
     bool isGameOverState;
+    bool isGamePaused;
 
     public:
     DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator)
     : shapeGen(shapegenerator), lastShape (nullptr), nextShape (nullptr), moveStatus (true),
-      scoreValue (0), isGameOverState (false), fContainerRef (fCon) {
+      scoreValue (0), isGameOverState (false),isGamePaused(false), fContainerRef (fCon) {
 
         auto yVal = LAST_ROW_Y;
         for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--) {
@@ -92,5 +97,11 @@ class DisplayContainer {
     void handleGameState (sf::RenderWindow& displayWindow);
 
     int getAllowedYVal(float yCoordinate);
+
+    void moveShapes();
+
+    void setGamePaused();
+
+    void resetGamePaused();
 
 };

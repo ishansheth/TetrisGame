@@ -37,5 +37,8 @@ static constexpr unsigned int FONT_SCORE_VALUE_Y = 160;
 static constexpr unsigned int FONT_GAMEOVER_X = 250;
 static constexpr unsigned int FONT_GAMEOVER_Y = 200;
 
+static constexpr unsigned int GAME_PAUSED_X = 250;
+static constexpr unsigned int GAME_PAUSED_Y = 200;
+
 static constexpr unsigned int SCORE_PER_ROW = 10;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
