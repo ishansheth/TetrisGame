@@ -1,5 +1,28 @@
 #include "DisplayContainer.h"
 #include <iostream>
+#include <thread>
+
+DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator)
+: shapeGen(shapegenerator), lastShape (nullptr), nextShape (nullptr), moveStatus (true),
+    scoreValue (0), isGameOverState (false),isGamePaused(false), fContainerRef (fCon), currentStageNumber(1) {
+
+    auto yVal = LAST_ROW_Y;
+    for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--) {
+        std::cout<<"row y values:"<<yVal<<std::endl;
+        individualComponentContainer[yVal] =
+        std::vector<std::pair<sf::RectangleShape*, IShape*>> ();
+        rowYCoordinate.push_back(yVal);
+        yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    }
+
+    winScoreForStage.push_back(20);
+    winScoreForStage.push_back(150);
+    winScoreForStage.push_back(500);
+    winScoreForStage.push_back(1000);
+
+    setParamtersForCurrentStage();
+}
+
 
 bool DisplayContainer::isGameOver () {
     return (individualComponentContainer[FIRST_ROW_Y].size () > 0);
@@ -48,10 +71,21 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
     }
     lastShape->drawShape (displayWindow);
     nextShape->drawShape (displayWindow);
+
+    std::string displayScoreVal = std::to_string (getScore ());
+    fContainerRef.setFontString (GameFontStrings::SCORE_VALUE, displayScoreVal);
+
+    std::string stageVal = std::to_string (currentStageNumber);
+    fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageVal);
 }
 
 void DisplayContainer::processshapes () {
     if (isGameOverState) {
+        return;
+    }
+
+    if(lastShape == nullptr)
+    {
         return;
     }
 
@@ -71,8 +105,6 @@ void DisplayContainer::processshapes () {
         lastShape = nullptr;
     }
 
-    std::string displayScoreVal = std::to_string (getScore ());
-    fContainerRef.setFontString (GameFontStrings::SCORE_INITIAL_VALUE, displayScoreVal);
 }
 
 // void DisplayContainer::drawShape (sf::RenderWindow& displayWindow) {
@@ -216,7 +248,7 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
             }
             it->second.clear ();
         }
-        fContainerRef.displaySingleString (displayWindow, GameFontStrings::GAME_OVER);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::GAME_OVER);
         sf::Event event;
 
         while (displayWindow.pollEvent (event)) {
@@ -231,26 +263,96 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
                 }
             }
         }
-
-    }
+    }    
     else if(isGamePaused)
     {
-        fContainerRef.displaySingleString (displayWindow, GameFontStrings::GAME_PAUSED);
-        fContainerRef.displayFonts (displayWindow);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::GAME_PAUSED);
+        fContainerRef.drawFonts (displayWindow);
         displayWindow.draw (partitionLine, 2, sf::Lines);
+    }
+    else if(getScore() >= winScoreForStage[currentStageNumber-1])
+    {
+        // steps for change stage:
+        // show complete stage message
+        // wait 1 sec
+        // show new stage number message
+        // clear the container
+        // set the new parameters for the new stage, generate new shapes
+        // display
+        std::cout<<"============stage complete"<<std::endl;
+        // clear the container
+        for (auto it = individualComponentContainer.begin ();
+             it != individualComponentContainer.end (); it++) {
+            for (auto& element : it->second) {
+                if (element.first != nullptr)
+                    delete element.first;
+
+                element.second = nullptr;
+            }
+            it->second.clear ();
+        }
+
+        // clear the screen
+        displayWindow.clear (sf::Color::Black);
+
+        // show stage complete message
+        std::string stageCompleteMsg = "Stage " + std::to_string(currentStageNumber) + " Complete!!";
+        fContainerRef.setFontString (GameFontStrings::STAGE_COMPLETE_MESSAGE, stageCompleteMsg);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_COMPLETE_MESSAGE);
+
+        // draw border line
+        displayWindow.draw (borderLine1, 2, sf::Lines);
+        displayWindow.draw (borderLine2, 2, sf::Lines);
+        displayWindow.draw (borderLine3, 2, sf::Lines);
+        displayWindow.draw (borderLine4, 2, sf::Lines);
+
+        // display the message
+        displayWindow.display ();
+        // wait 1 sec
+        std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+        // clear the screen
+        displayWindow.clear (sf::Color::Black);
+
+        // draw border line
+        displayWindow.draw (borderLine1, 2, sf::Lines);
+        displayWindow.draw (borderLine2, 2, sf::Lines);
+        displayWindow.draw (borderLine3, 2, sf::Lines);
+        displayWindow.draw (borderLine4, 2, sf::Lines);
+
+        // show next stage message
+        currentStageNumber++;
+        stageCompleteMsg = std::to_string(currentStageNumber);
+        // display next stage number message        
+        fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageCompleteMsg);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_COMPLETE_MSG_X,STAGE_COMPLETE_MSG_Y);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_COMPLETE_MSG_X + 80,STAGE_COMPLETE_MSG_Y);
+        // display
+        displayWindow.display ();
+        // wait
+        std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+        // clear
+        displayWindow.clear (sf::Color::Black);
+
+        // reset the position of stage label and values string
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_LEBEL_X, STAGE_LEBEL_Y);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_VALUE_X, STAGE_VALUE_Y);
+
+        // set the parameter for the next stage
+
+        lastShape = nullptr;
+        setParamtersForCurrentStage();
+        // display the necessary fonts
+        fContainerRef.drawFonts (displayWindow);
+        // display partition line
+        displayWindow.draw (partitionLine, 2, sf::Lines);
+
     }
     else if(!isGamePaused && !isGameOverState)
     {
         moveShapes();
-        fContainerRef.displayFonts (displayWindow);
+        fContainerRef.drawFonts (displayWindow);
         displayWindow.draw (partitionLine, 2, sf::Lines);
     }
-
-
-    // for (std::size_t i = 0; i < getGridLines().size(); i++)
-    // {
-    //     displayWindow.draw(getGridLines()[i].data(), 2, sf::Lines);
-    // }
 
     displayWindow.draw (borderLine1, 2, sf::Lines);
     displayWindow.draw (borderLine2, 2, sf::Lines);
@@ -274,4 +376,39 @@ void DisplayContainer::setGamePaused()
 void DisplayContainer::resetGamePaused()
 {
     isGamePaused = false;
+}
+
+
+void DisplayContainer::setParamtersForCurrentStage()
+{
+    if(currentStageNumber == 1)
+    {
+        SHAPE_DOWN_FALL_SPEED_Y = 0.1f;
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
+    }
+    else if(currentStageNumber == 2)
+    {
+        // set allowed shapes
+        SHAPE_DOWN_FALL_SPEED_Y = 0.2f;
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
+    }    
+    else if(currentStageNumber == 3)
+    {
+        // set allowed shapes
+        SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
+    }    
+    else if(currentStageNumber == 4)
+    {
+        // set allowed shapes
+        SHAPE_DOWN_FALL_SPEED_Y = 0.7f;
+    }    
+
+}
+
+void DisplayContainer::showCurrentStageScreen(sf::RenderWindow& displayWindow)
+{
+    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL);
+    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE);
+
 }

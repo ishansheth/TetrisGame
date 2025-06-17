@@ -83,6 +83,12 @@ struct TShape : public IShape {
 
     }
 
+    IShape* clone(DisplayContainer* displayManager) override
+    {
+        TShape* clonedObj = new TShape(displayManager);
+        return clonedObj;        
+    }
+
     virtual ~TShape () {
         delete rectangle1;
         delete rectangle2;
@@ -136,12 +142,6 @@ struct TShape : public IShape {
         rectangle4->setPosition (location1);
     }
 
-    virtual void drawAsNextShape (sf::RenderWindow& displayWindow) override {
-        displayWindow.draw (*rectangle1);
-        displayWindow.draw (*rectangle2);
-        displayWindow.draw (*rectangle3);
-        displayWindow.draw (*rectangle4);
-    }
 
     virtual void drawShape (sf::RenderWindow& displayWindow) override {
         displayWindow.draw (*rectangle1);

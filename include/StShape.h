@@ -71,6 +71,13 @@ struct StShape : public IShape {
 
     }
 
+    IShape* clone(DisplayContainer* displayManager) override
+    {
+        StShape* clonedObj = new StShape(displayManager);
+        return clonedObj;
+    }
+
+
     virtual ~StShape () {
         delete rectangle1;
         delete rectangle2;
@@ -120,13 +127,6 @@ struct StShape : public IShape {
         location1.x = location1.x + 3 * (SQUARE_SIDE_LENGTH) + 7 * SQUARE_OUTLINE_THICKNESS;
         location1.y = location1.y + SQUARE_OUTLINE_THICKNESS;
         rectangle4->setPosition (location1);
-    }
-
-    virtual void drawAsNextShape (sf::RenderWindow& displayWindow) override {
-        displayWindow.draw (*rectangle1);
-        displayWindow.draw (*rectangle2);
-        displayWindow.draw (*rectangle3);
-        displayWindow.draw (*rectangle4);
     }
 
     virtual void drawShape (sf::RenderWindow& displayWindow) override {

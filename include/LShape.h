@@ -79,6 +79,13 @@ struct LShape : public IShape {
         shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
     }
 
+    IShape* clone(DisplayContainer* displayManager) override
+    {
+        LShape* clonedObj = new LShape(displayManager);
+        return clonedObj;
+    }
+
+
     virtual ~LShape () {
         delete rectangle1;
         delete rectangle2;
@@ -127,13 +134,6 @@ struct LShape : public IShape {
         location1.x = location1.x + (SQUARE_SIDE_LENGTH) + 3 * SQUARE_OUTLINE_THICKNESS;
         location1.y = location1.y + (2 * SQUARE_SIDE_LENGTH) + 5 * SQUARE_OUTLINE_THICKNESS;
         rectangle4->setPosition (location1);
-    }
-
-    virtual void drawAsNextShape (sf::RenderWindow& displayWindow) override {
-        displayWindow.draw (*rectangle1);
-        displayWindow.draw (*rectangle2);
-        displayWindow.draw (*rectangle3);
-        displayWindow.draw (*rectangle4);
     }
 
     virtual void drawShape (sf::RenderWindow& displayWindow) override {

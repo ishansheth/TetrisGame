@@ -14,7 +14,7 @@ static const sf::Vertex partitionLine[] = { sf::Vertex (sf::Vector2f (DRAW_WINDO
 
 static std::vector<std::vector<sf::Vertex>> getGridLines () {
     static std::vector<std::vector<sf::Vertex>> gridLines;
-    for (std::size_t i = 1; i < 20; i++) {
+    for (std::size_t i = 1; i < NUMBER_OF_SQUARES_IN_ROW; i++) {
         std::vector<sf::Vertex> singleLine{
             sf::Vertex (sf::Vector2f ((SQUARE_SIDE_LENGTH_WITH_OUTLINE * i), 1.f), sf::Color (255, 0, 0, 100)),
             sf::Vertex (sf::Vector2f ((SQUARE_SIDE_LENGTH_WITH_OUTLINE * i), WINDOW_HEIGHT-0.1f), sf::Color (255, 0, 0, 100))
@@ -37,52 +37,25 @@ static const sf::Vertex borderLine4[] = { sf::Vertex (sf::Vector2f (1.f, WINDOW_
     sf::Vertex (sf::Vector2f (1.f, 1.f)) };
 
 class DisplayContainer {
-    std::vector<IShape*> mDisplayContainer;
+
     std::vector<int> rowYCoordinate;
+    std::map<int, std::vector<std::pair<sf::RectangleShape*, IShape*>>> individualComponentContainer;
+    std::vector<int> yPositions;
+    std::vector<unsigned int> winScoreForStage;
+
     FontContainer& fContainerRef;
     ShapeGenerator& shapeGen;
 
     IShape* lastShape;
     IShape* nextShape;
-    std::map<int, std::vector<std::pair<sf::RectangleShape*, IShape*>>> individualComponentContainer;
-    std::vector<int> yPositions;
-    bool moveStatus;
-    std::map<int, int> blockCountInRow;
-    int scoreValue;
 
-    void dropShape();
+    bool moveStatus;
+    int scoreValue;
+    unsigned int currentStageNumber;
 
     // state variables
     bool isGameOverState;
     bool isGamePaused;
-
-    public:
-    DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator)
-    : shapeGen(shapegenerator), lastShape (nullptr), nextShape (nullptr), moveStatus (true),
-      scoreValue (0), isGameOverState (false),isGamePaused(false), fContainerRef (fCon) {
-
-        auto yVal = LAST_ROW_Y;
-        for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--) {
-            std::cout<<"row y values:"<<yVal<<std::endl;
-            individualComponentContainer[yVal] =
-            std::vector<std::pair<sf::RectangleShape*, IShape*>> ();
-            rowYCoordinate.push_back(yVal);
-            yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-        }
-    }
-
-    void generateAndDrawShape (sf::RenderWindow&);
-
-    void processshapes ();
-
-    void handleKey (sf::Keyboard::Key k);
-
-    void drawShape (sf::RenderWindow& displayWindow);
-
-    void drawNextShape (IShape* shape, sf::RenderWindow& displayWindow);
-
-    // check of falling shape is intersecting with currently displayed shapes
-    bool isIntersecting (sf::Vector2f shapePosition);
 
     int getLowestYVal (int x, int refY);
 
@@ -90,18 +63,35 @@ class DisplayContainer {
 
     void checkFullRows ();
 
+    void setParamtersForCurrentStage();
+
+    void drawShape (sf::RenderWindow& displayWindow);
+
     int getScore ();
 
     bool isGameOver ();
-
-    void handleGameState (sf::RenderWindow& displayWindow);
 
     int getAllowedYVal(float yCoordinate);
 
     void moveShapes();
 
+    public:
+    DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator);
+
     void setGamePaused();
 
     void resetGamePaused();
+
+    bool isIntersecting (sf::Vector2f shapePosition);
+
+    void generateAndDrawShape (sf::RenderWindow&);
+
+    void processshapes ();
+
+    void handleKey (sf::Keyboard::Key k);
+
+    void handleGameState (sf::RenderWindow& displayWindow);
+
+    void showCurrentStageScreen(sf::RenderWindow& displayWindow);
 
 };

@@ -17,11 +17,12 @@ int main () {
     fontContainer.addFont (
     GameFontStrings::NEXT_SHAPE_LABEL, FONT_NEXT_SHAPE_X, FONT_NEXT_SHAPE_Y);
     fontContainer.addFont (GameFontStrings::SCORE_LABEL, FONT_SCORE_X, FONT_SCORE_Y);
-    fontContainer.addFont (GameFontStrings::SCORE_INITIAL_VALUE,
-    FONT_SCORE_VALUE_X, FONT_SCORE_VALUE_Y);
+    fontContainer.addFont (GameFontStrings::SCORE_VALUE, FONT_SCORE_VALUE_X, FONT_SCORE_VALUE_Y);
     fontContainer.addFont (GameFontStrings::GAME_OVER, FONT_GAMEOVER_X, FONT_GAMEOVER_Y);
-
     fontContainer.addFont (GameFontStrings::GAME_PAUSED, GAME_PAUSED_X, GAME_PAUSED_Y);
+    fontContainer.addFont (GameFontStrings::STAGE_LABEL, STAGE_LEBEL_X, STAGE_LEBEL_Y);
+    fontContainer.addFont (GameFontStrings::STAGE_VALUE, STAGE_VALUE_X, STAGE_VALUE_Y);
+    fontContainer.addFont (GameFontStrings::STAGE_COMPLETE_MESSAGE, STAGE_COMPLETE_MSG_X, STAGE_COMPLETE_MSG_Y);
 
     ShapeGenerator shapegen;
     DisplayContainer displayContainer (fontContainer, shapegen);

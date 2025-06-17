@@ -14,36 +14,6 @@ StageManager::StageManager (FontContainer& fCon, sf::RenderWindow& window) :
 
 void StageManager::checkStageStatus()
 {
-    // set allowed shapes in shape generator at the beginning of every stage
-    if(disPlayContainer.getScore() >= winScoreForStage[currentStageNumber])
-    {
-        if(currentStageNumber < winScoreForStage.size()-1)
-        {
-            currentStageNumber++;            
-        }
-        else
-        {
-            // decide what to do here?? all stages are cleared
-        }
-        
-        // remove all the shapes from container
-        // set the stage paramters
-        // create new allopwed shapes
-        // generate allowed shapes for the stage
-        if(currentStageNumber == 0)
-        {
-        }
-        else if(currentStageNumber == 1)
-        {            
-        }
-        else if(currentStageNumber == 2)
-        {            
-        }
-        else if(currentStageNumber == 4)
-        {            
-        }
-
-    }
 }
 
 void StageManager::generateStageScreen ()

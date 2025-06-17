@@ -2,6 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+class DisplayContainer;
+
 class IShape {
     public:
     virtual std::vector<sf::RectangleShape*> getShapeContianer ()  = 0;
@@ -9,8 +11,8 @@ class IShape {
     virtual void drawShape (sf::RenderWindow& displayWindow)       = 0;
     virtual void moveShape()                                       = 0;
     virtual bool getMoveStatus ()                                  = 0;
-    virtual void drawAsNextShape (sf::RenderWindow& displayWindow) = 0;
     virtual bool isShapeBroken ()                                  = 0;
     virtual void setBroken ()                                      = 0;
+    virtual IShape* clone(DisplayContainer* displayManager)        = 0;
     virtual ~IShape ()                                             = default;
 };

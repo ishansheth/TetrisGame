@@ -4,6 +4,7 @@
 #include "SqShape.h"
 #include "StShape.h"
 #include "TShape.h"
+#include "BombShape.h"
 
 IShape* ShapeGenerator::getNextShape (sf::Vector2f position, DisplayContainer* dCont) {
     auto shapeNumber = shapeIndexArray[1];
@@ -33,7 +34,13 @@ IShape* ShapeGenerator::getNextShape (sf::Vector2f position, DisplayContainer* d
         TShape* a = new TShape (dCont);
         a->setposition (position);
         return a;
+    } else if (shapeNumber == 6) {
+        // T shape
+        BombShape* a = new BombShape (dCont);
+        a->setposition (position);
+        return a;
     }
+
 }
 
 IShape* ShapeGenerator::getShape (sf::Vector2f position, DisplayContainer* dCont) {
@@ -64,14 +71,25 @@ IShape* ShapeGenerator::getShape (sf::Vector2f position, DisplayContainer* dCont
         TShape* a = new TShape (dCont);
         a->setposition (position);
         return a;
+    } else if (shapeNumber == 6) {
+        // T shape
+        BombShape* a = new BombShape (dCont);
+        a->setposition (position);
+        return a;
     }
+
 }
 
 void ShapeGenerator::generateShapes () {
-    auto shapeNumber   = dist (rng);
+    auto shapeNumber   = uniformDistribution (rng);
     shapeIndexArray[0] = shapeIndexArray[1];
     shapeIndexArray[1] = shapeNumber;
 
     // shapeIndexArray[0] = 1;
     // shapeIndexArray[1] = 1;
+}
+
+void ShapeGenerator::setAllowedShapesCount(unsigned int cnt)
+{
+    uniformDistribution.param(std::uniform_int_distribution<std::mt19937::result_type>::param_type{1, cnt});
 }

@@ -74,6 +74,13 @@ struct SShape : public IShape {
 
     }
 
+    IShape* clone(DisplayContainer* displayManager) override
+    {
+        SShape* clonedObj = new SShape(displayManager);
+        return clonedObj;        
+    }
+
+
     virtual ~SShape () {
         delete rectangle1;
         delete rectangle2;
@@ -128,25 +135,11 @@ struct SShape : public IShape {
         rectangle4->setPosition (location1);
     }
 
-    virtual void drawAsNextShape (sf::RenderWindow& displayWindow) override {
+    virtual void drawShape (sf::RenderWindow& displayWindow) override {
         displayWindow.draw (*rectangle1);
-        displayWindow.draw (*rectangle2);
+        displayWindow.draw (*rectangle2);    
         displayWindow.draw (*rectangle3);
         displayWindow.draw (*rectangle4);
-    }
-
-    virtual void drawShape (sf::RenderWindow& displayWindow) override {
-        if(rectangle1 != nullptr)
-            displayWindow.draw (*rectangle1);
-
-        if(rectangle2 != nullptr)
-            displayWindow.draw (*rectangle2);
-        
-        if(rectangle3 != nullptr)
-            displayWindow.draw (*rectangle3);
-        
-        if(rectangle4 != nullptr)
-            displayWindow.draw (*rectangle4);
     }
 
     virtual void handleKey (sf::Keyboard::Key k) override {

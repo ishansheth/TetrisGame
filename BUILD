@@ -19,6 +19,7 @@ cc_binary(
             "include/SShape.h",
             "include/StShape.h",
             "include/IShape.h",
+            "include/BombShape.h",
             "include/ShapeGenerator.h",
             "include/TShape.h"],
     visibility = ["//visibility:public"],
