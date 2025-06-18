@@ -2,7 +2,7 @@
 
 FontContainer::FontContainer () {
     std::string fontFilePath =
-    std::getenv ("HOME") + std::string (TOSTRINGYFY (FONT_FILE_PATH));
+    std::getenv ("HOME") + std::string (TOSTRINGYFY (FONTS_FILE_PATH));
     gameFont.loadFromFile (fontFilePath);
 }
 

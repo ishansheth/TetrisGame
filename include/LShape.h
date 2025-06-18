@@ -41,7 +41,7 @@ struct LShape : public IShape {
       rectangle2 (new sf::RectangleShape ()), rectangle3 (new sf::RectangleShape ()),
       rectangle4 (new sf::RectangleShape ()) {
         shapeVelocity = sf::Vector2f (SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
-        shapeTexture.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SHAPE_TEXTURE_FILE)), sf::IntRect({0,0},{32,32}));
+        shapeTexture.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (TEXTURE_FILE_PATH)), sf::IntRect({0,0},{32,32}));
         isMoving = true;
         isBroken = false;
 

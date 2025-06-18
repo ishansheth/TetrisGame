@@ -20,6 +20,12 @@ DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapege
     winScoreForStage.push_back(500);
     winScoreForStage.push_back(1000);
 
+    if(!shapeSettleSoundBuffer.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SOUND_FILE_PATH))))
+    {
+        std::cout<<"Could not load blip-131856.wav file"<<std::endl;
+    }
+
+    shapeSettleSound.setBuffer(shapeSettleSoundBuffer);
     setParamtersForCurrentStage();
 }
 
@@ -91,6 +97,8 @@ void DisplayContainer::processshapes () {
 
     moveStatus = lastShape->getMoveStatus ();
     if (!moveStatus) {
+        shapeSettleSound.play();
+
         // mapping individual component of shape to its y co-ordinate
         for (auto& s : lastShape->getShapeContianer ()) {
             auto yVal = getAllowedYVal(s->getPosition ().y);
@@ -313,30 +321,8 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
         // clear the screen
         displayWindow.clear (sf::Color::Black);
 
-        // draw border line
-        displayWindow.draw (borderLine1, 2, sf::Lines);
-        displayWindow.draw (borderLine2, 2, sf::Lines);
-        displayWindow.draw (borderLine3, 2, sf::Lines);
-        displayWindow.draw (borderLine4, 2, sf::Lines);
-
-        // show next stage message
         currentStageNumber++;
-        stageCompleteMsg = std::to_string(currentStageNumber);
-        // display next stage number message        
-        fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageCompleteMsg);
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_COMPLETE_MSG_X,STAGE_COMPLETE_MSG_Y);
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_COMPLETE_MSG_X + 80,STAGE_COMPLETE_MSG_Y);
-        // display
-        displayWindow.display ();
-        // wait
-        std::this_thread::sleep_for (std::chrono::milliseconds (1000));
-        // clear
-        displayWindow.clear (sf::Color::Black);
-
-        // reset the position of stage label and values string
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_LEBEL_X, STAGE_LEBEL_Y);
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_VALUE_X, STAGE_VALUE_Y);
-
+        showCurrentStageScreen(displayWindow);
         // set the parameter for the next stage
 
         lastShape = nullptr;
@@ -408,7 +394,30 @@ void DisplayContainer::setParamtersForCurrentStage()
 
 void DisplayContainer::showCurrentStageScreen(sf::RenderWindow& displayWindow)
 {
-    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL);
-    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE);
+    // clear the screen
+    displayWindow.clear (sf::Color::Black);
+
+    // draw border line
+    displayWindow.draw (borderLine1, 2, sf::Lines);
+    displayWindow.draw (borderLine2, 2, sf::Lines);
+    displayWindow.draw (borderLine3, 2, sf::Lines);
+    displayWindow.draw (borderLine4, 2, sf::Lines);
+
+    // show next stage message
+    auto stageCompleteMsg = std::to_string(currentStageNumber);
+    // display next stage number message        
+    fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageCompleteMsg);
+    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_COMPLETE_MSG_X,STAGE_COMPLETE_MSG_Y);
+    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_COMPLETE_MSG_X + 80,STAGE_COMPLETE_MSG_Y);
+    // display
+    displayWindow.display ();
+    // wait
+    std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+    // clear
+    displayWindow.clear (sf::Color::Black);
+
+    // reset the position of stage label and values string
+    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_LEBEL_X, STAGE_LEBEL_Y);
+    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_VALUE_X, STAGE_VALUE_Y);
 
 }

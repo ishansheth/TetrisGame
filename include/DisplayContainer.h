@@ -4,6 +4,8 @@
 #include "IShape.h"
 #include "ShapeGenerator.h"
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
 #include <random>
 #include <set>
 #include <unordered_map>
@@ -43,6 +45,9 @@ class DisplayContainer {
     std::vector<int> yPositions;
     std::vector<unsigned int> winScoreForStage;
 
+    sf::SoundBuffer shapeSettleSoundBuffer;
+    sf::Sound shapeSettleSound;
+    
     FontContainer& fContainerRef;
     ShapeGenerator& shapeGen;
 

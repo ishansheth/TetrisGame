@@ -27,11 +27,13 @@ cc_binary(
         "-lsfml-graphics",
         "-lsfml-window",
         "-lsfml-system",
+        "-lsfml-audio",
         "-lpthread"
     ],
     defines = [
-        'FONT_FILE_PATH="/TetrisGame/movistar-text/Movistar Text Regular.ttf"',
-        'SHAPE_TEXTURE_FILE="/TetrisGame/textures/brick_texture.png"',
+        'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
+        'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
+        'SOUND_FILE_PATH="/TetrisGame/resources/sounds/blip-131856.wav"',
         'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        
     ],
