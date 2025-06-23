@@ -13,7 +13,7 @@ static constexpr unsigned int DRAW_WINDOW_HEIGHT = 600;
 static constexpr float SHAPE_DOWN_FALL_SPEED_X   = 0.f;
 
 // this is not a constant, it value changes
-static float SHAPE_DOWN_FALL_SPEED_Y   = 0.1f;
+static float SHAPE_DOWN_FALL_SPEED_Y   = 0.3f;
 
 static constexpr unsigned int NUMBER_OF_ROWS_IN_GAME = 22;
 

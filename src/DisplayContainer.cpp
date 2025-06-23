@@ -1,21 +1,29 @@
 #include "DisplayContainer.h"
 #include <iostream>
 #include <thread>
+#include "Util.h"
 
 DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator)
-: shapeGen(shapegenerator), lastShape (nullptr), nextShape (nullptr), moveStatus (true),
-    scoreValue (0), isGameOverState (false),isGamePaused(false), fContainerRef (fCon), currentStageNumber(1) {
+: shapeGen(shapegenerator), 
+    lastShape (nullptr), 
+    nextShape (nullptr), 
+    moveStatus (true),
+    scoreValue (0), 
+    isGameOverState (false),
+    isGamePaused(false), 
+    fContainerRef (fCon), 
+    currentStageNumber(1)
+    {
 
     auto yVal = LAST_ROW_Y;
     for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--) {
-        std::cout<<"row y values:"<<yVal<<std::endl;
         individualComponentContainer[yVal] =
-        std::vector<std::pair<sf::RectangleShape*, IShape*>> ();
+        std::vector<std::pair<sf::RectangleShape**, IShape*>> ();
         rowYCoordinate.push_back(yVal);
         yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
-    winScoreForStage.push_back(20);
+    winScoreForStage.push_back(50);
     winScoreForStage.push_back(150);
     winScoreForStage.push_back(500);
     winScoreForStage.push_back(1000);
@@ -32,6 +40,58 @@ DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapege
 
 bool DisplayContainer::isGameOver () {
     return (individualComponentContainer[FIRST_ROW_Y].size () > 0);
+}
+
+// check of falling shape is intersecting with currently displayed shapes
+bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
+    // get all the shapes for the container which is currently displayed in window
+    for (auto& s : individualComponentContainer) {
+        // for incoming shape, iterate over all rectangles
+        // check the shape in container
+        
+        for (auto& t2 : s.second) 
+        {
+            // if( abs((*t2.first)->getPosition ().y - shapePosition.y) <= 0.1 && 
+            // abs((*t2.first)->getPosition ().x - shapePosition.x) <= 0.1) 
+            // {
+            //     std::cout<<"continuing......."<<std::endl;
+            //     continue;
+            // }
+
+            if (
+            //                    bottom >= top
+            shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
+            (*t2.first)->getPosition ().y - SQUARE_OUTLINE_THICKNESS &&
+            //                    top <= bottom
+            shapePosition.y <= (*t2.first)->getPosition ().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+            //                    left <= right
+            shapePosition.x <= (*t2.first)->getPosition ().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+            //                    right >= left
+            shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
+            (*t2.first)->getPosition ().x)
+
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int DisplayContainer::getLowestYVal (int x, int refY) {
+    for (auto it = individualComponentContainer.begin ();
+         it != individualComponentContainer.end (); it++) {
+        if (it->first > refY) {
+            bool found = false;
+            for (auto& element : it->second) {
+                if (abs((*element.first)->getPosition ().x - x) <= 3) {
+                    it--;
+                    return it->first;
+                }
+            }
+        }
+    }
+    return rowYCoordinate.front();
 }
 
 int DisplayContainer::getAllowedYVal(float yCoordinate)
@@ -70,13 +130,16 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
         nextShape = shapeGen.getNextShape (sf::Vector2f (NEXT_SHAPE_X, NEXT_SHAPE_Y), this);
     }
 
-    for (auto& s : individualComponentContainer) {
-        for (auto& element : s.second) {
-            displayWindow.draw (*(element.first));
-        }
-    }
+
     lastShape->drawShape (displayWindow);
     nextShape->drawShape (displayWindow);
+
+    for (auto& s : individualComponentContainer) {
+        for (auto& element : s.second) {
+            displayWindow.draw (**(element.first));
+        }
+    }
+
 
     std::string displayScoreVal = std::to_string (getScore ());
     fContainerRef.setFontString (GameFontStrings::SCORE_VALUE, displayScoreVal);
@@ -85,7 +148,7 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
     fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageVal);
 }
 
-void DisplayContainer::processshapes () {
+void DisplayContainer::processshapes (sf::RenderWindow& displayWindow) {
     if (isGameOverState) {
         return;
     }
@@ -101,122 +164,154 @@ void DisplayContainer::processshapes () {
 
         // mapping individual component of shape to its y co-ordinate
         for (auto& s : lastShape->getShapeContianer ()) {
-            auto yVal = getAllowedYVal(s->getPosition ().y);
-            auto lowerBoundPtr = individualComponentContainer.lower_bound (yVal);
-
-            if (lowerBoundPtr != individualComponentContainer.end ()) {
-                lowerBoundPtr->second.push_back (std::make_pair (s, lastShape));
-            }
+            auto yVal = getAllowedYVal((*s)->getPosition ().y);
+            individualComponentContainer[yVal].push_back (std::make_pair (s, lastShape));
         }
 
-        checkFullRows ();
+        checkFullRows (displayWindow);
         lastShape = nullptr;
     }
+}
+
+void DisplayContainer::prepareDefaultScreenItems(sf::RenderWindow& displayWindow)
+{
+
+    displayWindow.draw (borderLine1, 2, sf::Lines);
+    displayWindow.draw (borderLine2, 2, sf::Lines);
+    displayWindow.draw (borderLine3, 2, sf::Lines);
+    displayWindow.draw (borderLine4, 2, sf::Lines);
+
+    displayWindow.draw (partitionLine, 2, sf::Lines);
+
+
+    fContainerRef.drawFonts (displayWindow);
+    nextShape->drawShape (displayWindow);
 
 }
 
-// void DisplayContainer::drawShape (sf::RenderWindow& displayWindow) {
-//     for (auto& s : individualComponentContainer) {
-//         for (auto& element : s.second) {
-//             displayWindow.draw (*(element.first));
-//         }
-//     }
-//     lastShape->drawShape (displayWindow);
-// }
+void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow& displayWindow)
+{
 
-// void DisplayContainer::drawNextShape (IShape* shape, sf::RenderWindow& displayWindow) {
-//     shape->drawAsNextShape (displayWindow);
-// }
+    // to move the row down, you have to animate
+    // steps to animate:
+    // clear the screen
+    // draw default objects
+    // take the whole container and draw it
+    // take the row which needs to fall and move it and then draw it
+    // then display it
+    sf::Vector2f fallVelocity = {0,0.2f};
 
-// check of falling shape is intersecting with currently displayed shapes
-bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
-    // get all the shapes for the container which is currently displayed in window
-    for (auto& s : individualComponentContainer) {
-        // for incoming shape, iterate over all rectangles
-        // check the shape in container
-        for (auto& t2 : s.second) {
-            if (
-            //                    bottom >= top
-            shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
-            t2.first->getPosition ().y - SQUARE_OUTLINE_THICKNESS &&
-            //                    top <= bottom
-            shapePosition.y <= t2.first->getPosition ().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
-            //                    left <= right
-            shapePosition.x <= t2.first->getPosition ().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
-            //                    right >= left
-            shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
-            t2.first->getPosition ().x)
+    /*
 
+        how would you move the pieces? some are broken and some are full shapes
+
+        if you use IShape interface to move the pieces, then it will moove the shape from different 
+        rows and you cant control
+
+        so you have to take induiidual shquares and drop them. but you have to see until which point
+        then should be dropped because for whole shape its different and for broken shape its different
+
+    */
+    bool wasShapeMoved = true;
+
+    while(wasShapeMoved)
+    {
+        displayWindow.clear(sf::Color::Black);
+
+        prepareDefaultScreenItems(displayWindow);
+
+
+        if(individualComponentContainer[sourceY].size() > 0)
+        {
+            for(auto& e : individualComponentContainer[sourceY])
             {
+                auto xval = (*(e.first))->getPosition().x;
+                auto p1 = (*(e.first))->getPosition() + fallVelocity; 
 
-                return true;
-            }
-        }
-    }
-    return false;
-}
+                if((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,sourceY))
+                {
+                    (*(e.first))->move(fallVelocity);
+                    wasShapeMoved = true;
 
-int DisplayContainer::getLowestYVal (int x, int refY) {
-    for (auto it = individualComponentContainer.begin ();
-         it != individualComponentContainer.end (); it++) {
-        if (it->first > refY) {
-            bool found = false;
-            for (auto& element : it->second) {
-                if (abs(element.first->getPosition ().x - x) <= 3) {
-                    it--;
-                    std::cout<<"x:"<<x<<"-->return:"<<it->first<<std::endl;
-                    return it->first;
+                }
+                else if(p1.y <= removedRow)   
+                {
+                    (*(e.first))->move(fallVelocity);
+                    wasShapeMoved = true;
+
+                }
+                else
+                {   
+                    wasShapeMoved = false;
                 }
             }
         }
+        else
+        {
+            wasShapeMoved = false;
+        }
+
+        for (auto& s : individualComponentContainer) {
+            for (auto& element : s.second) {
+                displayWindow.draw (**(element.first));
+            }
+        }    
+
+        displayWindow.display();
+
     }
-    std::cout<<"not found: x:"<<x<<"-->return:"<<rowYCoordinate.front()<<std::endl;
-    return rowYCoordinate.front();
+
+    for(auto& e : individualComponentContainer[sourceY])
+    {
+
+        if((e.second)->isShapeBroken())
+        {
+            auto ypos = getAllowedYVal((*(e.first))->getPosition ().y);
+            individualComponentContainer[ypos].push_back(e);
+        }
+        else
+        {
+            individualComponentContainer[removedRow].push_back(e);
+        }
+
+    }
+
+    individualComponentContainer[sourceY].clear();
 }
 
-void DisplayContainer::shiftStructureDownward () {
-    bool shiftRequired = false;
+void DisplayContainer::shiftStructureDownward (sf::RenderWindow& displayWindow) {
     int startShiftYVal = 0;
     int fullRowYVal    = 0;
+    bool shiftRequired = false;
     for (auto it = individualComponentContainer.rbegin ();
-         it != individualComponentContainer.rend (); it++) {
-        if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
-            std::cout<<"Removing row at:"<<it->first<<std::endl;
+         it != individualComponentContainer.rend (); it++) 
+    {
+        if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) 
+        {
             shiftRequired = true;
             if (fullRowYVal == 0) {
                 fullRowYVal = it->first;
             }
             for (auto& fRC : it->second) {
-                delete fRC.first;
-                fRC.first = nullptr;
+                delete *fRC.first;
+                *fRC.first = nullptr;
                 fRC.second->setBroken();
             }
             it->second.clear();
-            std::cout<<"cleared:"<<it->first<<std::endl;
             scoreValue += SCORE_PER_ROW;
             it++;
             startShiftYVal = it->first;
-            std::cout<<"start shifting from:"<<startShiftYVal<<"  to:"<<fullRowYVal<<std::endl;
             break;
         }
     }
-    std::cout<<"size after clear:"<<individualComponentContainer[fullRowYVal].size()<<std::endl;
+
     if (shiftRequired) {
         for (auto it = individualComponentContainer.rbegin ();
              it != individualComponentContainer.rend (); it++) {
-            if (it->first <= startShiftYVal) {
-                for (auto& s : it->second) {
-                    auto xVal   = s.first->getPosition ().x;
-                    int lowestY = 0;
-                    if (s.second->isShapeBroken ()) {
-                        lowestY = getLowestYVal (xVal, it->first);
-                    } else {
-                        lowestY = fullRowYVal;
-                    }
-                    s.first->setPosition (xVal, lowestY);
-                    individualComponentContainer[lowestY].push_back (s);
-                }
-                individualComponentContainer[startShiftYVal].clear ();
+
+            if (it->first <= startShiftYVal) 
+            {
+                makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
                 startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
                 fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
             }
@@ -224,14 +319,14 @@ void DisplayContainer::shiftStructureDownward () {
     }
 }
 
-void DisplayContainer::checkFullRows () {
+void DisplayContainer::checkFullRows (sf::RenderWindow& displayWindow) {
     while (1) {
         bool removeRows = false;
         for (auto it = individualComponentContainer.rbegin ();
              it != individualComponentContainer.rend (); it++) {
-            std::cout<<it->first<<"---"<<it->second.size()<<std::endl;
+            std::cout<<it->first<<":checking full rows---------"<<it->second.size()<<std::endl;
             if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
-                shiftStructureDownward ();
+                shiftStructureDownward (displayWindow);
                 removeRows = true;
             }
         }
@@ -250,7 +345,8 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
              it != individualComponentContainer.end (); it++) {
             for (auto& element : it->second) {
                 if (element.first != nullptr)
-                    delete element.first;
+                    delete *element.first;
+                    *element.first = nullptr;
 
                 element.second = nullptr;
             }
@@ -293,9 +389,9 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
              it != individualComponentContainer.end (); it++) {
             for (auto& element : it->second) {
                 if (element.first != nullptr)
-                    delete element.first;
+                    delete *element.first;
+                    *element.first = nullptr;
 
-                element.second = nullptr;
             }
             it->second.clear ();
         }
@@ -369,7 +465,7 @@ void DisplayContainer::setParamtersForCurrentStage()
 {
     if(currentStageNumber == 1)
     {
-        SHAPE_DOWN_FALL_SPEED_Y = 0.1f;
+        SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
         shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
     }
     else if(currentStageNumber == 2)
@@ -419,5 +515,24 @@ void DisplayContainer::showCurrentStageScreen(sf::RenderWindow& displayWindow)
     // reset the position of stage label and values string
     fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_LEBEL_X, STAGE_LEBEL_Y);
     fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_VALUE_X, STAGE_VALUE_Y);
+
+}
+
+void DisplayContainer::cleanDisplayContainer()
+{
+        for (auto it = individualComponentContainer.begin (); 
+            it != individualComponentContainer.end (); it++) 
+        {
+            for(auto& element: it->second)
+            {
+                delete element.first;
+
+                if(element.second != nullptr)
+                {
+                    delete element.second;
+                    element.second = nullptr;
+                }
+            }            
+        }
 
 }

@@ -6,7 +6,7 @@ class DisplayContainer;
 
 class IShape {
     public:
-    virtual std::vector<sf::RectangleShape*> getShapeContianer ()  = 0;
+    virtual std::vector<sf::RectangleShape**> getShapeContianer ()  = 0;
     virtual void handleKey (sf::Keyboard::Key k)                   = 0;
     virtual void drawShape (sf::RenderWindow& displayWindow)       = 0;
     virtual void moveShape()                                       = 0;

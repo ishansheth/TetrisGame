@@ -22,7 +22,7 @@ class BombShape : public IShape {
     sf::RectangleShape* rectangle5;
 
     DisplayContainer* dContainer;
-    std::vector<sf::RectangleShape*> shapeContainer;
+    std::vector<sf::RectangleShape**> shapeContainer;
     sf::Color sqaureColor = sf::Color (100, 250, 50);
 
     sf::Color outlineColor = sf::Color (255, 255, 255);
@@ -86,7 +86,7 @@ class BombShape : public IShape {
 
     }
 
-    std::vector<sf::RectangleShape*> getShapeContianer () {
+    std::vector<sf::RectangleShape**> getShapeContianer () {
         return shapeContainer;
     }
 
@@ -187,51 +187,37 @@ class BombShape : public IShape {
             }
         }
 
-        dropShape();
-    }
-
-    void dropShape()
-    {
-        // set the velocity vector
+        // shape falling as a whole
         shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
         shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
 
-        if (rectangle1 != nullptr) {
+        if(rectangle1 != nullptr && 
+        rectangle2 != nullptr && 
+        rectangle3 != nullptr && 
+        rectangle4 != nullptr)
+        {
             auto p1 = rectangle1->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p1) && !dContainer->isIntersecting (p1)) {
-                rectangle1->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-
-        if (rectangle2 != nullptr) {
             auto p2 = rectangle2->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p2) && !dContainer->isIntersecting (p2)) {
-                rectangle2->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-
-        if (rectangle3 != nullptr) {
             auto p3 = rectangle3->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p3) && !dContainer->isIntersecting (p3)) {
-                rectangle3->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-
-        if (rectangle4 != nullptr) {
             auto p4 = rectangle4->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p4) && !dContainer->isIntersecting (p4)) {
+
+            if (isWithinDrawWindow (p1) && 
+            isWithinDrawWindow (p2) &&
+            isWithinDrawWindow (p3) && 
+            isWithinDrawWindow (p4) &&
+            !dContainer->isIntersecting (p1) && 
+            !dContainer->isIntersecting (p2) &&
+            !dContainer->isIntersecting (p3) && 
+            !dContainer->isIntersecting (p4)) 
+            {
+                rectangle1->move (shapeVelocity);
+                rectangle2->move (shapeVelocity);
+                rectangle3->move (shapeVelocity);
                 rectangle4->move (shapeVelocity);
-            } else {
-                isMoving = false;
+                // shift the center
             }
         }
-    }
 
+    }
 
 };

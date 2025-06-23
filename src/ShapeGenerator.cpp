@@ -35,7 +35,7 @@ IShape* ShapeGenerator::getNextShape (sf::Vector2f position, DisplayContainer* d
         a->setposition (position);
         return a;
     } else if (shapeNumber == 6) {
-        // T shape
+        // bomb shape
         BombShape* a = new BombShape (dCont);
         a->setposition (position);
         return a;
@@ -72,7 +72,7 @@ IShape* ShapeGenerator::getShape (sf::Vector2f position, DisplayContainer* dCont
         a->setposition (position);
         return a;
     } else if (shapeNumber == 6) {
-        // T shape
+        // bomb shape
         BombShape* a = new BombShape (dCont);
         a->setposition (position);
         return a;

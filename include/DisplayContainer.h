@@ -41,7 +41,7 @@ static const sf::Vertex borderLine4[] = { sf::Vertex (sf::Vector2f (1.f, WINDOW_
 class DisplayContainer {
 
     std::vector<int> rowYCoordinate;
-    std::map<int, std::vector<std::pair<sf::RectangleShape*, IShape*>>> individualComponentContainer;
+    std::map<int, std::vector<std::pair<sf::RectangleShape**, IShape*>>> individualComponentContainer;
     std::vector<int> yPositions;
     std::vector<unsigned int> winScoreForStage;
 
@@ -64,9 +64,9 @@ class DisplayContainer {
 
     int getLowestYVal (int x, int refY);
 
-    void shiftStructureDownward ();
+    void shiftStructureDownward (sf::RenderWindow& displayWindow);
 
-    void checkFullRows ();
+    void checkFullRows (sf::RenderWindow& displayWindow);
 
     void setParamtersForCurrentStage();
 
@@ -91,7 +91,7 @@ class DisplayContainer {
 
     void generateAndDrawShape (sf::RenderWindow&);
 
-    void processshapes ();
+    void processshapes (sf::RenderWindow& displayWindow);
 
     void handleKey (sf::Keyboard::Key k);
 
@@ -99,4 +99,9 @@ class DisplayContainer {
 
     void showCurrentStageScreen(sf::RenderWindow& displayWindow);
 
+    void cleanDisplayContainer();
+
+    void makeRowFall (int sourceY, int removedRow, sf::RenderWindow& displayWindow);
+
+    void prepareDefaultScreenItems (sf::RenderWindow& displayWindow);
 };

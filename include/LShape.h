@@ -18,7 +18,7 @@ struct LShape : public IShape {
 
     sf::Texture shapeTexture;
     DisplayContainer* dContainer;
-    std::vector<sf::RectangleShape*> shapeContainer;
+    std::vector<sf::RectangleShape**> shapeContainer;
     sf::Color sqaureColor = sf::Color (100, 250, 50);
 
     // IMPORTANT:
@@ -37,8 +37,10 @@ struct LShape : public IShape {
 
     public:
     LShape (DisplayContainer* displayManager)
-    : dContainer (displayManager), rectangle1 (new sf::RectangleShape ()),
-      rectangle2 (new sf::RectangleShape ()), rectangle3 (new sf::RectangleShape ()),
+    : dContainer (displayManager), 
+      rectangle1 (new sf::RectangleShape ()),
+      rectangle2 (new sf::RectangleShape ()), 
+      rectangle3 (new sf::RectangleShape ()),
       rectangle4 (new sf::RectangleShape ()) {
         shapeVelocity = sf::Vector2f (SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
         shapeTexture.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (TEXTURE_FILE_PATH)), sf::IntRect({0,0},{32,32}));
@@ -70,10 +72,10 @@ struct LShape : public IShape {
         rectangle4->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
         rectangle4->setTexture(&shapeTexture);
 
-        shapeContainer.push_back (rectangle1);
-        shapeContainer.push_back (rectangle2);
-        shapeContainer.push_back (rectangle3);
-        shapeContainer.push_back (rectangle4);
+        shapeContainer.push_back (&rectangle1);
+        shapeContainer.push_back (&rectangle2);
+        shapeContainer.push_back (&rectangle3);
+        shapeContainer.push_back (&rectangle4);
 
         shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
         shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
@@ -94,7 +96,7 @@ struct LShape : public IShape {
         shapeContainer.clear ();
     }
 
-    std::vector<sf::RectangleShape*> getShapeContianer () {
+    std::vector<sf::RectangleShape**> getShapeContianer () {
         return shapeContainer;
     }
 
@@ -138,10 +140,17 @@ struct LShape : public IShape {
 
     virtual void drawShape (sf::RenderWindow& displayWindow) override {
         // set the velocity vector
-        displayWindow.draw (*rectangle1);
-        displayWindow.draw (*rectangle2);
-        displayWindow.draw (*rectangle3);
-        displayWindow.draw (*rectangle4);
+        if(rectangle1 != nullptr)
+            displayWindow.draw (*rectangle1);
+
+        if(rectangle2 != nullptr)
+            displayWindow.draw (*rectangle2);
+
+        if(rectangle3 != nullptr)
+            displayWindow.draw (*rectangle3);
+
+        if(rectangle4 != nullptr)
+            displayWindow.draw (*rectangle4);
     }
 
     virtual void handleKey (sf::Keyboard::Key k) override {
@@ -155,10 +164,43 @@ struct LShape : public IShape {
             shapeVelocity.x = -shapeVelocity.x;
             shapeVelocity.y = 0;
 
+            auto p1 = rectangle1->getPosition () + shapeVelocity;
+            auto p2 = rectangle2->getPosition () + shapeVelocity;
+            auto p3 = rectangle3->getPosition () + shapeVelocity;
+            auto p4 = rectangle4->getPosition () + shapeVelocity;
+
+            if (isWithinDrawWindow (p1) && isWithinDrawWindow (p2) &&
+            isWithinDrawWindow (p3) && isWithinDrawWindow (p4) &&
+            !dContainer->isIntersecting (p1) && !dContainer->isIntersecting (p2) &&
+            !dContainer->isIntersecting (p3) && !dContainer->isIntersecting (p4)) {
+                rectangle1->move (shapeVelocity);
+                rectangle2->move (shapeVelocity);
+                rectangle3->move (shapeVelocity);
+                rectangle4->move (shapeVelocity);
+                // shift the center
+                shapeCenter += shapeVelocity;
+            }
         } else if (sf::Keyboard::Right == k) {
             // rotate shape velocity vector to -> direction and move within window
             shapeVelocity.x = SQUARE_SIDE_LENGTH_WITH_OUTLINE;
             shapeVelocity.y = 0;
+
+            auto p1 = rectangle1->getPosition () + shapeVelocity;
+            auto p2 = rectangle2->getPosition () + shapeVelocity;
+            auto p3 = rectangle3->getPosition () + shapeVelocity;
+            auto p4 = rectangle4->getPosition () + shapeVelocity;
+
+            if (isWithinDrawWindow (p1) && isWithinDrawWindow (p2) &&
+            isWithinDrawWindow (p3) && isWithinDrawWindow (p4) &&
+            !dContainer->isIntersecting (p1) && !dContainer->isIntersecting (p2) &&
+            !dContainer->isIntersecting (p3) && !dContainer->isIntersecting (p4)) {
+                rectangle1->move (shapeVelocity);
+                rectangle2->move (shapeVelocity);
+                rectangle3->move (shapeVelocity);
+                rectangle4->move (shapeVelocity);
+                // shift the center
+                shapeCenter += shapeVelocity;
+            }
 
         } else if (sf::Keyboard::Space == k) {
             // rotate clockwise 90 degrees rectangle3
@@ -201,6 +243,10 @@ struct LShape : public IShape {
     virtual void moveShape() override {
         // either move the whole shape or move individual cubes
 
+        // shape falling as a whole
+        shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
+        shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
+
         if(rectangle1 != nullptr && 
         rectangle2 != nullptr && 
         rectangle3 != nullptr && 
@@ -227,53 +273,14 @@ struct LShape : public IShape {
                 // shift the center
                 shapeCenter += shapeVelocity;
             }
+            else
+            {
+                isMoving = false;
+            }
+
         }
 
-        dropShape();
     }
 
-    void dropShape()
-    {
-        // set the velocity vector
-        shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
-        shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
-
-        if (rectangle1 != nullptr) {
-            auto p1 = rectangle1->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p1) && !dContainer->isIntersecting (p1)) {
-                shapeCenter += shapeVelocity;
-                rectangle1->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-
-        if (rectangle2 != nullptr) {
-            auto p2 = rectangle2->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p2) && !dContainer->isIntersecting (p2)) {
-                rectangle2->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-
-        if (rectangle3 != nullptr) {
-            auto p3 = rectangle3->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p3) && !dContainer->isIntersecting (p3)) {
-                rectangle3->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-
-        if (rectangle4 != nullptr) {
-            auto p4 = rectangle4->getPosition () + shapeVelocity;
-            if (isWithinDrawWindow (p4) && !dContainer->isIntersecting (p4)) {
-                rectangle4->move (shapeVelocity);
-            } else {
-                isMoving = false;
-            }
-        }
-    }
 
 };

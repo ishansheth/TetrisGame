@@ -71,7 +71,7 @@ int main () {
 
         displayContainer.handleGameState (displayWindow);
 
-        displayContainer.processshapes ();
+        displayContainer.processshapes (displayWindow);
 
     }
 
