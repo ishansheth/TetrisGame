@@ -104,4 +104,6 @@ class DisplayContainer {
     void makeRowFall (int sourceY, int removedRow, sf::RenderWindow& displayWindow);
 
     void prepareDefaultScreenItems (sf::RenderWindow& displayWindow);
+
+    void eraseCompletedRow(int removedRowY, sf::RenderWindow& displayWindow);
 };

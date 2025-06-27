@@ -81,10 +81,13 @@ bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
 int DisplayContainer::getLowestYVal (int x, int refY) {
     for (auto it = individualComponentContainer.begin ();
          it != individualComponentContainer.end (); it++) {
-        if (it->first > refY) {
+        if (it->first > refY) 
+        {
             bool found = false;
-            for (auto& element : it->second) {
-                if (abs((*element.first)->getPosition ().x - x) <= 3) {
+            for (auto& element : it->second) 
+            {
+                if (abs((*element.first)->getPosition ().x - x) <= 3) 
+                {
                     it--;
                     return it->first;
                 }
@@ -213,42 +216,37 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
 
     */
     bool wasShapeMoved = true;
-
     while(wasShapeMoved)
     {
         displayWindow.clear(sf::Color::Black);
 
         prepareDefaultScreenItems(displayWindow);
 
-
         if(individualComponentContainer[sourceY].size() > 0)
         {
+            wasShapeMoved = false;
+
             for(auto& e : individualComponentContainer[sourceY])
             {
                 auto xval = (*(e.first))->getPosition().x;
                 auto p1 = (*(e.first))->getPosition() + fallVelocity; 
 
-                if((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,sourceY))
+                if((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,removedRow))
                 {
                     (*(e.first))->move(fallVelocity);
-                    wasShapeMoved = true;
+                    wasShapeMoved = true;                    
 
                 }
-                else if(p1.y <= removedRow)   
+                else if(!(e.second)->isShapeBroken() && p1.y <= removedRow)   
                 {
                     (*(e.first))->move(fallVelocity);
-                    wasShapeMoved = true;
-
-                }
-                else
-                {   
-                    wasShapeMoved = false;
+                    wasShapeMoved = true;                    
                 }
             }
         }
         else
         {
-            wasShapeMoved = false;
+            wasShapeMoved = false;                    
         }
 
         for (auto& s : individualComponentContainer) {
@@ -275,8 +273,44 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
         }
 
     }
-
     individualComponentContainer[sourceY].clear();
+}
+
+
+void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow& displayWindow)
+{
+    // sorting here is required because we have to make row disappear from left to right
+    // so sort in ascending order of x-coordinate value
+    std::sort(individualComponentContainer[removedRowY].begin(), 
+                individualComponentContainer[removedRowY].end(), 
+                [](std::pair<sf::RectangleShape**, IShape*>& a, std::pair<sf::RectangleShape**, IShape*>& b)
+                {
+                    return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x; 
+                } );
+
+    for(auto& element: individualComponentContainer[removedRowY])
+    {
+        displayWindow.clear(sf::Color::Black);
+
+        prepareDefaultScreenItems(displayWindow);
+
+        delete *element.first;
+        *element.first = nullptr;
+        element.second->setBroken();
+
+        for (auto& s : individualComponentContainer) {
+            for (auto& element : s.second) {
+                if(*(element.first) != nullptr)
+                    displayWindow.draw (**(element.first));
+            }
+        }    
+
+        displayWindow.display();
+        std::this_thread::sleep_for (std::chrono::milliseconds (100));
+
+    }
+    individualComponentContainer[removedRowY].clear();
+
 }
 
 void DisplayContainer::shiftStructureDownward (sf::RenderWindow& displayWindow) {
@@ -292,12 +326,9 @@ void DisplayContainer::shiftStructureDownward (sf::RenderWindow& displayWindow) 
             if (fullRowYVal == 0) {
                 fullRowYVal = it->first;
             }
-            for (auto& fRC : it->second) {
-                delete *fRC.first;
-                *fRC.first = nullptr;
-                fRC.second->setBroken();
-            }
-            it->second.clear();
+
+            eraseCompletedRow(it->first,displayWindow);
+
             scoreValue += SCORE_PER_ROW;
             it++;
             startShiftYVal = it->first;
@@ -324,7 +355,6 @@ void DisplayContainer::checkFullRows (sf::RenderWindow& displayWindow) {
         bool removeRows = false;
         for (auto it = individualComponentContainer.rbegin ();
              it != individualComponentContainer.rend (); it++) {
-            std::cout<<it->first<<":checking full rows---------"<<it->second.size()<<std::endl;
             if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
                 shiftStructureDownward (displayWindow);
                 removeRows = true;
