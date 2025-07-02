@@ -67,6 +67,7 @@ int main () {
         // sMgr.checkStageStatus();
         // sMgr.generateStageScreen();
         // sMgr.processStageShapes();
+
         displayContainer.generateAndDrawShape (displayWindow);
 
         displayContainer.handleGameState (displayWindow);

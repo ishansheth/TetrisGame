@@ -5,7 +5,7 @@
 #include "ShapeGenerator.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-
+#include "ParticleSystem.h"
 #include <random>
 #include <set>
 #include <unordered_map>
@@ -43,11 +43,17 @@ class DisplayContainer {
     std::vector<int> rowYCoordinate;
     std::map<int, std::vector<std::pair<sf::RectangleShape**, IShape*>>> individualComponentContainer;
     std::vector<int> yPositions;
-    std::vector<unsigned int> winScoreForStage;
 
     sf::SoundBuffer shapeSettleSoundBuffer;
     sf::Sound shapeSettleSound;
-    
+
+    sf::SoundBuffer rowRemovedExplosionSoundBuffer;
+    sf::Sound rowRemovedExplosionSound;
+
+    std::vector<ParticleSystem> rowCollapseParticleSystems;
+    int xCoordinateEmitter;
+    sf::Clock particleSystemUpdateTimer;
+
     FontContainer& fContainerRef;
     ShapeGenerator& shapeGen;
 

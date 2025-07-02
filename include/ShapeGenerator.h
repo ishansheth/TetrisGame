@@ -13,10 +13,13 @@ class ShapeGenerator {
     std::uniform_int_distribution<std::mt19937::result_type> uniformDistribution;
 
     public:
-    ShapeGenerator () : shapeIndexArray{ -1, -1 }, rng (dev ()), uniformDistribution (1, 5) {
+    ShapeGenerator () : 
+        shapeIndexArray{ -1, -1 }, 
+        rng (dev ()), 
+        uniformDistribution (1, 5) 
+    {
         shapeIndexArray[0] = uniformDistribution (rng);
         shapeIndexArray[1] = uniformDistribution (rng);
-
     }
 
     IShape* getNextShape (sf::Vector2f position, DisplayContainer* dCont);

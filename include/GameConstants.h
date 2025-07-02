@@ -57,4 +57,11 @@ static constexpr unsigned int GAME_PAUSED_Y = 200;
 
 
 static constexpr unsigned int SCORE_PER_ROW = 10;
+
+static constexpr unsigned int CLEARING_SCORE_PER_STAGE[] = {50,150,500,1000};
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+static const char* BLIP_SOUND_FILE_NAME = "blip-131856.wav";
+static const char* EXPLOSION_SOUND_FILE_NAME = "explosion.wav";

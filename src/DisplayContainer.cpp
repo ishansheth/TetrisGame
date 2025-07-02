@@ -12,7 +12,8 @@ DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapege
     isGameOverState (false),
     isGamePaused(false), 
     fContainerRef (fCon), 
-    currentStageNumber(1)
+    currentStageNumber(1),
+    xCoordinateEmitter(-100)
     {
 
     auto yVal = LAST_ROW_Y;
@@ -23,18 +24,27 @@ DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapege
         yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
-    winScoreForStage.push_back(50);
-    winScoreForStage.push_back(150);
-    winScoreForStage.push_back(500);
-    winScoreForStage.push_back(1000);
-
-    if(!shapeSettleSoundBuffer.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SOUND_FILE_PATH))))
+    if(!shapeSettleSoundBuffer.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + std::string(BLIP_SOUND_FILE_NAME)))
     {
         std::cout<<"Could not load blip-131856.wav file"<<std::endl;
     }
 
+    if(!rowRemovedExplosionSoundBuffer.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + std::string(EXPLOSION_SOUND_FILE_NAME)))
+    {
+        std::cout<<"Could not load blip-131856.wav file"<<std::endl;
+    }
+
+
     shapeSettleSound.setBuffer(shapeSettleSoundBuffer);
+    rowRemovedExplosionSound.setBuffer(rowRemovedExplosionSoundBuffer);
     setParamtersForCurrentStage();
+    
+    
+    for(unsigned int i = 0; i < NUMBER_OF_SQUARES_IN_ROW; i++)
+    {
+        rowCollapseParticleSystems.emplace_back(1000);
+    }
+
 }
 
 
@@ -51,13 +61,6 @@ bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
         
         for (auto& t2 : s.second) 
         {
-            // if( abs((*t2.first)->getPosition ().y - shapePosition.y) <= 0.1 && 
-            // abs((*t2.first)->getPosition ().x - shapePosition.x) <= 0.1) 
-            // {
-            //     std::cout<<"continuing......."<<std::endl;
-            //     continue;
-            // }
-
             if (
             //                    bottom >= top
             shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
@@ -151,7 +154,8 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
     fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageVal);
 }
 
-void DisplayContainer::processshapes (sf::RenderWindow& displayWindow) {
+void DisplayContainer::processshapes (sf::RenderWindow& displayWindow) 
+{
     if (isGameOverState) {
         return;
     }
@@ -288,11 +292,31 @@ void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow& disp
                     return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x; 
                 } );
 
+    unsigned int interval = 0;
+
+    unsigned int idx = 0;
+    for(auto& element: individualComponentContainer[removedRowY])
+    {
+       rowCollapseParticleSystems[idx].setEmitter( (*(element.first))->getPosition());
+       idx += 1;
+    }
+
+    idx = 0;
+
+    rowRemovedExplosionSound.play();
+    
     for(auto& element: individualComponentContainer[removedRowY])
     {
         displayWindow.clear(sf::Color::Black);
 
         prepareDefaultScreenItems(displayWindow);
+
+        for(unsigned int i = 0; i <= idx; i++)
+        {
+            rowCollapseParticleSystems[i].update();
+            displayWindow.draw(rowCollapseParticleSystems[i]);
+        }
+        idx += 1;
 
         delete *element.first;
         *element.first = nullptr;
@@ -301,12 +325,15 @@ void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow& disp
         for (auto& s : individualComponentContainer) {
             for (auto& element : s.second) {
                 if(*(element.first) != nullptr)
+                {
                     displayWindow.draw (**(element.first));
+                }
             }
         }    
 
         displayWindow.display();
         std::this_thread::sleep_for (std::chrono::milliseconds (100));
+        interval++;
 
     }
     individualComponentContainer[removedRowY].clear();
@@ -404,7 +431,7 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
         fContainerRef.drawFonts (displayWindow);
         displayWindow.draw (partitionLine, 2, sf::Lines);
     }
-    else if(getScore() >= winScoreForStage[currentStageNumber-1])
+    else if(getScore() >= CLEARING_SCORE_PER_STAGE[currentStageNumber-1])
     {
         // steps for change stage:
         // show complete stage message

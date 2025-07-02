@@ -6,6 +6,10 @@
 #include "TShape.h"
 #include "BombShape.h"
 
+static constexpr unsigned int arr_len = 10;
+static constexpr unsigned int testShapes[arr_len] = {4,4,4,4,4,4,4,4,4,2};
+static unsigned int idx = 0;
+
 IShape* ShapeGenerator::getNextShape (sf::Vector2f position, DisplayContainer* dCont) {
     auto shapeNumber = shapeIndexArray[1];
 
@@ -82,11 +86,13 @@ IShape* ShapeGenerator::getShape (sf::Vector2f position, DisplayContainer* dCont
 
 void ShapeGenerator::generateShapes () {
     auto shapeNumber   = uniformDistribution (rng);
-    shapeIndexArray[0] = shapeIndexArray[1];
-    shapeIndexArray[1] = shapeNumber;
 
-    // shapeIndexArray[0] = 1;
-    // shapeIndexArray[1] = 1;
+        shapeIndexArray[0] = shapeIndexArray[1];
+        shapeIndexArray[1] = shapeNumber;
+
+        // shapeIndexArray[0] = 2;
+        // shapeIndexArray[1] = 2;
+
 }
 
 void ShapeGenerator::setAllowedShapesCount(unsigned int cnt)

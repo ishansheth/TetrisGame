@@ -11,6 +11,7 @@ cc_binary(
             "src/StageManager.cpp",
             "include/StageManager.h",
             "include/Util.h",
+            "include/ParticleSystem.h",
             "include/DisplayContainer.h",
             "include/GameConstants.h",
             "include/FontContainer.h",
@@ -33,7 +34,7 @@ cc_binary(
     defines = [
         'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
         'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
-        'SOUND_FILE_PATH="/TetrisGame/resources/sounds/blip-131856.wav"',
+        'SOUND_FOLDER_PATH="/TetrisGame/resources/sounds/"',
         'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        
     ],
