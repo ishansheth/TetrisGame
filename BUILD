@@ -16,6 +16,7 @@ cc_binary(
             "include/GameConstants.h",
             "include/FontContainer.h",
             "include/LShape.h",
+            "include/BaseShape.h",
             "include/SqShape.h",
             "include/SShape.h",
             "include/StShape.h",

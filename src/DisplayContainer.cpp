@@ -24,12 +24,16 @@ DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapege
         yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
-    if(!shapeSettleSoundBuffer.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + std::string(BLIP_SOUND_FILE_NAME)))
+    if(!shapeSettleSoundBuffer.loadFromFile(std::getenv ("HOME") + 
+    std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + 
+    std::string(BLIP_SOUND_FILE_NAME)))
     {
         std::cout<<"Could not load blip-131856.wav file"<<std::endl;
     }
 
-    if(!rowRemovedExplosionSoundBuffer.loadFromFile(std::getenv ("HOME") + std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + std::string(EXPLOSION_SOUND_FILE_NAME)))
+    if(!rowRemovedExplosionSoundBuffer.loadFromFile(std::getenv ("HOME") + 
+    std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + 
+    std::string(EXPLOSION_SOUND_FILE_NAME)))
     {
         std::cout<<"Could not load blip-131856.wav file"<<std::endl;
     }
@@ -174,6 +178,11 @@ void DisplayContainer::processshapes (sf::RenderWindow& displayWindow)
             auto yVal = getAllowedYVal((*s)->getPosition ().y);
             individualComponentContainer[yVal].push_back (std::make_pair (s, lastShape));
         }
+
+        // if(lastShape->isBomb())
+        // {
+        //     handleBombDrop(lastShape);
+        // }
 
         checkFullRows (displayWindow);
         lastShape = nullptr;
