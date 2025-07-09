@@ -86,7 +86,10 @@ class DisplayContainer {
 
     void moveShapes();
 
+    void handleBombDrop(IShape*);
+
     public:
+
     DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator);
 
     void setGamePaused();

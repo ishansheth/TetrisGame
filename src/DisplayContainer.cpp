@@ -158,6 +158,48 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
     fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageVal);
 }
 
+
+void DisplayContainer::handleBombDrop(IShape* bombShape)
+{
+    float minx = 1000;
+    float maxx = 0;
+
+    for (auto& s : lastShape->getShapeContianer ()) 
+    {
+        minx = std::min(minx,(*s)->getPosition ().x);
+        maxx = std::max(maxx,(*s)->getPosition ().x);        
+    }
+
+    int countRows = 3;
+    for (auto& s : individualComponentContainer) 
+    {
+        bool blocksRemoved = false;
+        for (auto& element : s.second) 
+        {
+            auto x = static_cast<int>((*(element.first))->getPosition().x);
+            if(x >= minx && x <= maxx)
+            {
+
+                delete *element.first;
+                *element.first = nullptr;
+                element.second->setBroken();   
+                blocksRemoved = true;             
+            }
+        }
+
+        if(blocksRemoved)
+        {
+            countRows--;
+        }
+
+        if(countRows == 0)
+            break;
+            
+    }    
+
+}
+
+
 void DisplayContainer::processshapes (sf::RenderWindow& displayWindow) 
 {
     if (isGameOverState) {
@@ -169,23 +211,26 @@ void DisplayContainer::processshapes (sf::RenderWindow& displayWindow)
         return;
     }
 
-    moveStatus = lastShape->getMoveStatus ();
-    if (!moveStatus) {
-        shapeSettleSound.play();
+    moveStatus = lastShape->getMoveStatus();
+    if (!moveStatus) 
+    {
 
         // mapping individual component of shape to its y co-ordinate
-        for (auto& s : lastShape->getShapeContianer ()) {
+        for (auto& s : lastShape->getShapeContianer ()) 
+        {
             auto yVal = getAllowedYVal((*s)->getPosition ().y);
             individualComponentContainer[yVal].push_back (std::make_pair (s, lastShape));
         }
 
-        // if(lastShape->isBomb())
-        // {
-        //     handleBombDrop(lastShape);
-        // }
+        if(lastShape->isBomb())
+        {
+            handleBombDrop(lastShape);
+        }
 
         checkFullRows (displayWindow);
         lastShape = nullptr;
+        shapeSettleSound.play();
+
     }
 }
 
@@ -228,65 +273,95 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
         then should be dropped because for whole shape its different and for broken shape its different
 
     */
-    bool wasShapeMoved = true;
-    while(wasShapeMoved)
+
+    unsigned int rowCnt = 0;
+    auto iterator = individualComponentContainer.find(sourceY);
+    for(;iterator != individualComponentContainer.begin();iterator--)
     {
+        if(iterator->second.size() > 0)
+        {
+            rowCnt++;
+        }
+    }
+
+
+
+    while(rowCnt > 0)
+    {
+        auto iterator = individualComponentContainer.find(sourceY);
         displayWindow.clear(sf::Color::Black);
-
         prepareDefaultScreenItems(displayWindow);
+        auto removedRow_r = removedRow;
 
-        if(individualComponentContainer[sourceY].size() > 0)
+        for(;iterator != individualComponentContainer.begin();iterator--)
         {
-            wasShapeMoved = false;
-
-            for(auto& e : individualComponentContainer[sourceY])
+            bool wasShapeMoved = false;
+            
+            if(iterator->second.size() > 0)
             {
-                auto xval = (*(e.first))->getPosition().x;
-                auto p1 = (*(e.first))->getPosition() + fallVelocity; 
-
-                if((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,removedRow))
+                for(auto& element: iterator->second)    
                 {
-                    (*(e.first))->move(fallVelocity);
-                    wasShapeMoved = true;                    
+                    auto xval = (*(element.first))->getPosition().x;
+                    auto p1 = (*(element.first))->getPosition() + fallVelocity; 
+
+                    if((element.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,removedRow_r))
+                    {
+                        (*(element.first))->move(fallVelocity);
+                        wasShapeMoved = true;                    
+
+                    }
+                    
+                    else if(!(element.second)->isShapeBroken() && p1.y <= removedRow_r)   
+                    {
+                        (*(element.first))->move(fallVelocity);
+                        wasShapeMoved = true;                    
+                    }
+                }
+                
+                // if wasShapeMoved was not set to true then nothing moved, 
+                // so add that row in container and remove from source 
+                if(!wasShapeMoved)
+                {
+                    rowCnt--;
+                    for(auto& e: iterator->second)
+                    {
+                        if((e.second)->isShapeBroken())
+                        {
+                            auto ypos = getAllowedYVal((*(e.first))->getPosition ().y);
+                            individualComponentContainer[ypos].push_back(e);
+                        }
+                        else
+                        {
+                            individualComponentContainer[removedRow_r].push_back(e);
+                        }
+
+                    }
+
+                    iterator->second.clear();
+                    removedRow_r -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
 
                 }
-                else if(!(e.second)->isShapeBroken() && p1.y <= removedRow)   
-                {
-                    (*(e.first))->move(fallVelocity);
-                    wasShapeMoved = true;                    
-                }
+
             }
-        }
-        else
-        {
-            wasShapeMoved = false;                    
+            else
+            {
+                wasShapeMoved = true;
+            }
+            
+
+            for (auto& s : individualComponentContainer) {
+                for (auto& element : s.second) {
+                    displayWindow.draw (**(element.first));
+                }
+            }    
+
         }
 
-        for (auto& s : individualComponentContainer) {
-            for (auto& element : s.second) {
-                displayWindow.draw (**(element.first));
-            }
-        }    
 
         displayWindow.display();
 
     }
 
-    for(auto& e : individualComponentContainer[sourceY])
-    {
-
-        if((e.second)->isShapeBroken())
-        {
-            auto ypos = getAllowedYVal((*(e.first))->getPosition ().y);
-            individualComponentContainer[ypos].push_back(e);
-        }
-        else
-        {
-            individualComponentContainer[removedRow].push_back(e);
-        }
-
-    }
-    individualComponentContainer[sourceY].clear();
 }
 
 
@@ -372,18 +447,11 @@ void DisplayContainer::shiftStructureDownward (sf::RenderWindow& displayWindow) 
         }
     }
 
-    if (shiftRequired) {
-        for (auto it = individualComponentContainer.rbegin ();
-             it != individualComponentContainer.rend (); it++) {
-
-            if (it->first <= startShiftYVal) 
-            {
-                makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
-                startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-                fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-            }
-        }
+    if (shiftRequired) 
+    {
+        makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
     }
+    
 }
 
 void DisplayContainer::checkFullRows (sf::RenderWindow& displayWindow) {

@@ -63,5 +63,5 @@ static constexpr unsigned int CLEARING_SCORE_PER_STAGE[] = {50,150,500,1000};
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-static const char* BLIP_SOUND_FILE_NAME = "blip-131856.wav";
+static const char* BLIP_SOUND_FILE_NAME = "hitHurt.wav";
 static const char* EXPLOSION_SOUND_FILE_NAME = "explosion.wav";

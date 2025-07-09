@@ -24,6 +24,11 @@ struct SShape : public BaseShape {
     virtual ~SShape () 
     {}
 
+    virtual bool isBomb() override
+    {
+        return false;
+    }
+
     virtual void setposition (sf::Vector2f location) override
     {
         auto location1 = location;

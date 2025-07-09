@@ -1,10 +1,10 @@
 #pragma once
 #include "DisplayContainer.h"
-#include "IShape.h"
+#include "BaseShape.h"
 #include "Util.h"
 #include <SFML/Graphics.hpp>
 
-class BombShape : public IShape {
+class BombShape : public BaseShape {
     // Bomb shape
 
     //  this is a bomb of size 3x3 so it creates a 3x3 
@@ -32,77 +32,26 @@ class BombShape : public IShape {
 
     public:
 
-    BombShape (DisplayContainer* displayManager)
-    : dContainer (displayManager), rectangle1 (new sf::RectangleShape ()),
-      rectangle2 (new sf::RectangleShape ()), rectangle3 (new sf::RectangleShape ()),
-      rectangle4 (new sf::RectangleShape ()), rectangle5 (new sf::RectangleShape ()) {
-        shapeVelocity = sf::Vector2f (SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
-        isMoving = true;
-        isBroken = false;
-
-        rectangle1->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
-        rectangle2->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
-        rectangle3->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
-        rectangle4->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
-        rectangle5->setSize (sf::Vector2f (SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
-
-        rectangle1->setFillColor (sqaureColor);
-        rectangle1->setOutlineColor (outlineColor);
-        rectangle1->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-
-        rectangle2->setFillColor (sqaureColor);
-        rectangle2->setOutlineColor (outlineColor);
-        rectangle2->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-
-        rectangle3->setFillColor (sqaureColor);
-        rectangle3->setOutlineColor (outlineColor);
-        rectangle3->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-
-        rectangle4->setFillColor (sqaureColor);
-        rectangle4->setOutlineColor (outlineColor);
-        rectangle4->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-
-        rectangle5->setFillColor (sqaureColor);
-        rectangle5->setOutlineColor (outlineColor);
-        rectangle5->setOutlineThickness (SQUARE_OUTLINE_THICKNESS);
-
-      }
+    BombShape (DisplayContainer* displayManager) : 
+    BaseShape(displayManager, sf::Color(100, 250, 50))
+    {}
 
     virtual IShape* clone(DisplayContainer* displayManager)
     {
         BombShape* clonedObj = new BombShape(displayManager);
         return clonedObj;
+    }
 
+    virtual bool isBomb() override
+    {
+        return true;
     }
 
     virtual ~BombShape()
+    {}
+
+    virtual void setposition (sf::Vector2f location) override
     {
-        delete rectangle1;
-        delete rectangle2;
-        delete rectangle3;
-        delete rectangle4;
-        delete rectangle5;
-        shapeContainer.clear ();
-
-    }
-
-    std::vector<sf::RectangleShape**> getShapeContianer () {
-        return shapeContainer;
-    }
-
-    virtual bool getMoveStatus () override {
-        return isMoving;
-    }
-
-    virtual bool isShapeBroken () override {
-        return isBroken;
-    }
-
-    virtual void setBroken () override {
-        isBroken = true;
-    }
-
-    void setposition (sf::Vector2f location) {
         auto location1 = location;
         location1.x    = location1.x + SQUARE_OUTLINE_THICKNESS;
         location1.y    = location1.y + SQUARE_OUTLINE_THICKNESS;
@@ -158,66 +107,5 @@ class BombShape : public IShape {
         }        
     }
 
-    virtual void moveShape() override {
-        // either move the whole shape or move individual cubes
-
-        if(rectangle1 != nullptr && 
-        rectangle2 != nullptr && 
-        rectangle3 != nullptr && 
-        rectangle4 != nullptr)
-        {
-            auto p1 = rectangle1->getPosition () + shapeVelocity;
-            auto p2 = rectangle2->getPosition () + shapeVelocity;
-            auto p3 = rectangle3->getPosition () + shapeVelocity;
-            auto p4 = rectangle4->getPosition () + shapeVelocity;
-
-            if (isWithinDrawWindow (p1) && 
-            isWithinDrawWindow (p2) &&
-            isWithinDrawWindow (p3) && 
-            isWithinDrawWindow (p4) &&
-            !dContainer->isIntersecting (p1) && 
-            !dContainer->isIntersecting (p2) &&
-            !dContainer->isIntersecting (p3) && 
-            !dContainer->isIntersecting (p4)) 
-            {
-                rectangle1->move (shapeVelocity);
-                rectangle2->move (shapeVelocity);
-                rectangle3->move (shapeVelocity);
-                rectangle4->move (shapeVelocity);
-            }
-        }
-
-        // shape falling as a whole
-        shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
-        shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
-
-        if(rectangle1 != nullptr && 
-        rectangle2 != nullptr && 
-        rectangle3 != nullptr && 
-        rectangle4 != nullptr)
-        {
-            auto p1 = rectangle1->getPosition () + shapeVelocity;
-            auto p2 = rectangle2->getPosition () + shapeVelocity;
-            auto p3 = rectangle3->getPosition () + shapeVelocity;
-            auto p4 = rectangle4->getPosition () + shapeVelocity;
-
-            if (isWithinDrawWindow (p1) && 
-            isWithinDrawWindow (p2) &&
-            isWithinDrawWindow (p3) && 
-            isWithinDrawWindow (p4) &&
-            !dContainer->isIntersecting (p1) && 
-            !dContainer->isIntersecting (p2) &&
-            !dContainer->isIntersecting (p3) && 
-            !dContainer->isIntersecting (p4)) 
-            {
-                rectangle1->move (shapeVelocity);
-                rectangle2->move (shapeVelocity);
-                rectangle3->move (shapeVelocity);
-                rectangle4->move (shapeVelocity);
-                // shift the center
-            }
-        }
-
-    }
 
 };

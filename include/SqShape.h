@@ -26,6 +26,11 @@ struct SqShape : public BaseShape {
     virtual ~SqShape () {
     }
 
+    virtual bool isBomb() override
+    {
+        return false;
+    }
+
     virtual void setposition (sf::Vector2f location) override
     {
         // shapecenter is at 1st rectangle upper left corner

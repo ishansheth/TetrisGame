@@ -72,7 +72,7 @@ class BaseShape : public IShape
 
     }
 
-    virtual void setposition (sf::Vector2f location) = 0;
+    virtual bool isBomb() = 0;
 
     virtual ~BaseShape () {
         delete rectangle1;

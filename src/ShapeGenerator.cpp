@@ -87,11 +87,11 @@ IShape* ShapeGenerator::getShape (sf::Vector2f position, DisplayContainer* dCont
 void ShapeGenerator::generateShapes () {
     auto shapeNumber   = uniformDistribution (rng);
 
-        shapeIndexArray[0] = shapeIndexArray[1];
-        shapeIndexArray[1] = shapeNumber;
+        // shapeIndexArray[0] = shapeIndexArray[1];
+        // shapeIndexArray[1] = shapeNumber;
 
-        // shapeIndexArray[0] = 2;
-        // shapeIndexArray[1] = 2;
+        shapeIndexArray[0] = 2;
+        shapeIndexArray[1] = 2;
 
 }
 
