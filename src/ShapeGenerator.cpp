@@ -6,9 +6,11 @@
 #include "TShape.h"
 #include "BombShape.h"
 
-static constexpr unsigned int arr_len = 10;
-static constexpr unsigned int testShapes[arr_len] = {4,4,4,4,4,4,4,4,4,2};
 static unsigned int idx = 0;
+
+static constexpr unsigned int arr_len = 16;
+static constexpr unsigned int testShapes[arr_len] = {2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2};
+
 
 IShape* ShapeGenerator::getNextShape (sf::Vector2f position, DisplayContainer* dCont) {
     auto shapeNumber = shapeIndexArray[1];
@@ -85,13 +87,24 @@ IShape* ShapeGenerator::getShape (sf::Vector2f position, DisplayContainer* dCont
 }
 
 void ShapeGenerator::generateShapes () {
-    auto shapeNumber   = uniformDistribution (rng);
 
-        // shapeIndexArray[0] = shapeIndexArray[1];
-        // shapeIndexArray[1] = shapeNumber;
+  if(idx < arr_len-1)
+    {
+        shapeIndexArray[0] = testShapes[idx];
+        shapeIndexArray[1] = testShapes[idx+1];
+        idx += 1;
+    }
+    else
+    {
+        auto shapeNumber   = uniformDistribution (rng);
 
-        shapeIndexArray[0] = 2;
-        shapeIndexArray[1] = 2;
+            // shapeIndexArray[0] = shapeIndexArray[1];
+            // shapeIndexArray[1] = shapeNumber;
+
+            shapeIndexArray[0] = 2;
+            shapeIndexArray[1] = 2;
+
+    }
 
 }
 

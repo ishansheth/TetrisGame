@@ -96,7 +96,7 @@ class DisplayContainer {
 
     void resetGamePaused();
 
-    bool isIntersecting (sf::Vector2f shapePosition);
+    bool isIntersecting (sf::Vector2f shapePosition, IShape* ignoreshape);
 
     void generateAndDrawShape (sf::RenderWindow&);
 

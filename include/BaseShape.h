@@ -72,7 +72,6 @@ class BaseShape : public IShape
 
     }
 
-    virtual bool isBomb() = 0;
 
     virtual ~BaseShape () {
         delete rectangle1;
@@ -134,10 +133,15 @@ class BaseShape : public IShape
             auto p3 = rectangle3->getPosition () + shapeVelocity;
             auto p4 = rectangle4->getPosition () + shapeVelocity;
 
-            if (isWithinDrawWindow (p1) && isWithinDrawWindow (p2) &&
-            isWithinDrawWindow (p3) && isWithinDrawWindow (p4) &&
-            !dContainer->isIntersecting (p1) && !dContainer->isIntersecting (p2) &&
-            !dContainer->isIntersecting (p3) && !dContainer->isIntersecting (p4)) {
+            if (isWithinDrawWindow (p1) && 
+            isWithinDrawWindow (p2) &&
+            isWithinDrawWindow (p3) && 
+            isWithinDrawWindow (p4) &&
+            !dContainer->isIntersecting (p1, this) && 
+            !dContainer->isIntersecting (p2, this) &&
+            !dContainer->isIntersecting (p3, this) && 
+            !dContainer->isIntersecting (p4, this)) 
+            {
                 rectangle1->move (shapeVelocity);
                 rectangle2->move (shapeVelocity);
                 rectangle3->move (shapeVelocity);
@@ -155,10 +159,15 @@ class BaseShape : public IShape
             auto p3 = rectangle3->getPosition () + shapeVelocity;
             auto p4 = rectangle4->getPosition () + shapeVelocity;
 
-            if (isWithinDrawWindow (p1) && isWithinDrawWindow (p2) &&
-            isWithinDrawWindow (p3) && isWithinDrawWindow (p4) &&
-            !dContainer->isIntersecting (p1) && !dContainer->isIntersecting (p2) &&
-            !dContainer->isIntersecting (p3) && !dContainer->isIntersecting (p4)) {
+            if (isWithinDrawWindow (p1) && 
+            isWithinDrawWindow (p2) &&
+            isWithinDrawWindow (p3) && 
+            isWithinDrawWindow (p4) &&
+            !dContainer->isIntersecting (p1, this) && 
+            !dContainer->isIntersecting (p2, this) &&
+            !dContainer->isIntersecting (p3, this) && 
+            !dContainer->isIntersecting (p4, this)) 
+            {
                 rectangle1->move (shapeVelocity);
                 rectangle2->move (shapeVelocity);
                 rectangle3->move (shapeVelocity);
@@ -195,8 +204,10 @@ class BaseShape : public IShape
             vec1.x    = static_cast<int> (-vec1.y);
             vec1.y    = static_cast<int> (temp);
             vec1 += shapeCenter;
-            if (isWithinDrawWindow (vec1) && isWithinDrawWindow (vec2) &&
-            isWithinDrawWindow (vec3) && isWithinDrawWindow (vec4)) {
+            if (isWithinDrawWindow (vec1) && 
+            isWithinDrawWindow (vec2) &&
+            isWithinDrawWindow (vec3) && 
+            isWithinDrawWindow (vec4)) {
                 rectangle1->setPosition (vec1);
                 rectangle2->setPosition (vec2);
                 rectangle3->setPosition (vec3);
@@ -205,12 +216,14 @@ class BaseShape : public IShape
         }
     }
 
-    virtual void moveShape() override {
+    virtual bool moveShape() override 
+    {
         // either move the whole shape or move individual cubes
 
         // shape falling as a whole
         shapeVelocity.x = SHAPE_DOWN_FALL_SPEED_X;
         shapeVelocity.y = SHAPE_DOWN_FALL_SPEED_Y;
+        bool movestatus = false;
 
         if(rectangle1 != nullptr && 
         rectangle2 != nullptr && 
@@ -226,10 +239,10 @@ class BaseShape : public IShape
             isWithinDrawWindow (p2) &&
             isWithinDrawWindow (p3) && 
             isWithinDrawWindow (p4) &&
-            !dContainer->isIntersecting (p1) && 
-            !dContainer->isIntersecting (p2) &&
-            !dContainer->isIntersecting (p3) && 
-            !dContainer->isIntersecting (p4)) 
+            !dContainer->isIntersecting (p1, this) && 
+            !dContainer->isIntersecting (p2, this) &&
+            !dContainer->isIntersecting (p3, this) && 
+            !dContainer->isIntersecting (p4, this)) 
             {
                 rectangle1->move (shapeVelocity);
                 rectangle2->move (shapeVelocity);
@@ -237,6 +250,7 @@ class BaseShape : public IShape
                 rectangle4->move (shapeVelocity);
                 // shift the center
                 shapeCenter += shapeVelocity;
+                movestatus = true;
             }
             else
             {
@@ -245,6 +259,7 @@ class BaseShape : public IShape
 
         }
 
+        return movestatus;
     }
 
 

@@ -57,7 +57,8 @@ bool DisplayContainer::isGameOver () {
 }
 
 // check of falling shape is intersecting with currently displayed shapes
-bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
+bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition, IShape* ignoreshape) 
+{
     // get all the shapes for the container which is currently displayed in window
     for (auto& s : individualComponentContainer) {
         // for incoming shape, iterate over all rectangles
@@ -65,6 +66,9 @@ bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition) {
         
         for (auto& t2 : s.second) 
         {
+            if(t2.second == ignoreshape)
+                continue;
+
             if (
             //                    bottom >= top
             shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
@@ -146,7 +150,8 @@ void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
 
     for (auto& s : individualComponentContainer) {
         for (auto& element : s.second) {
-            displayWindow.draw (**(element.first));
+            if(*(element.first) != nullptr)
+                displayWindow.draw (**(element.first));
         }
     }
 
@@ -273,94 +278,136 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
         then should be dropped because for whole shape its different and for broken shape its different
 
     */
+   
+    bool wasShapeMoved = true;
+    bool wholeShapeMoved = false;
 
-    unsigned int rowCnt = 0;
-    auto iterator = individualComponentContainer.find(sourceY);
-    for(;iterator != individualComponentContainer.begin();iterator--)
+    std::unordered_map<int,std::vector<int>> wholeShapeXY;
+
+    for(auto& e : individualComponentContainer[sourceY])
     {
-        if(iterator->second.size() > 0)
+        if(!(e.second)->isShapeBroken())
         {
-            rowCnt++;
+            for (auto& s : ((e.second))->getShapeContianer ())
+            {
+                auto xval = (*(s))->getPosition().x;
+                auto yval = getAllowedYVal((*(s))->getPosition().y); 
+                wholeShapeXY[yval].push_back(xval);
+            }
         }
     }
 
-
-
-    while(rowCnt > 0)
+    while(wasShapeMoved)
     {
-        auto iterator = individualComponentContainer.find(sourceY);
         displayWindow.clear(sf::Color::Black);
+
         prepareDefaultScreenItems(displayWindow);
-        auto removedRow_r = removedRow;
 
-        for(;iterator != individualComponentContainer.begin();iterator--)
+        if(individualComponentContainer[sourceY].size() > 0)
         {
-            bool wasShapeMoved = false;
-            
-            if(iterator->second.size() > 0)
+            wasShapeMoved = false;
+
+            for(auto& e : individualComponentContainer[sourceY])
             {
-                for(auto& element: iterator->second)    
+                auto xval = (*(e.first))->getPosition().x;
+                auto p1 = (*(e.first))->getPosition() + fallVelocity; 
+
+                if((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,removedRow))
                 {
-                    auto xval = (*(element.first))->getPosition().x;
-                    auto p1 = (*(element.first))->getPosition() + fallVelocity; 
-
-                    if((element.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,removedRow_r))
-                    {
-                        (*(element.first))->move(fallVelocity);
-                        wasShapeMoved = true;                    
-
-                    }
-                    
-                    else if(!(element.second)->isShapeBroken() && p1.y <= removedRow_r)   
-                    {
-                        (*(element.first))->move(fallVelocity);
-                        wasShapeMoved = true;                    
-                    }
+                    (*(e.first))->move(fallVelocity);
+                    wasShapeMoved = true;
                 }
-                
-                // if wasShapeMoved was not set to true then nothing moved, 
-                // so add that row in container and remove from source 
-                if(!wasShapeMoved)
+                else if((e.second)->moveShape())
                 {
-                    rowCnt--;
-                    for(auto& e: iterator->second)
-                    {
-                        if((e.second)->isShapeBroken())
-                        {
-                            auto ypos = getAllowedYVal((*(e.first))->getPosition ().y);
-                            individualComponentContainer[ypos].push_back(e);
-                        }
-                        else
-                        {
-                            individualComponentContainer[removedRow_r].push_back(e);
-                        }
-
-                    }
-
-                    iterator->second.clear();
-                    removedRow_r -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-
+                    wasShapeMoved = true;
+                    wholeShapeMoved = true;
                 }
-
             }
-            else
-            {
-                wasShapeMoved = true;
-            }
-            
-
-            for (auto& s : individualComponentContainer) {
-                for (auto& element : s.second) {
-                    displayWindow.draw (**(element.first));
-                }
-            }    
-
+        }
+        else
+        {
+            wasShapeMoved = false;
         }
 
+        for (auto& s : individualComponentContainer) 
+        {
+            for (auto& element : s.second) 
+            {
+                displayWindow.draw (**(element.first));
+            }
+        }    
 
         displayWindow.display();
 
     }
+
+
+    for(auto& e : individualComponentContainer[sourceY])
+    {
+
+        if((e.second)->isShapeBroken())
+        {
+            auto ypos = getAllowedYVal((*(e.first))->getPosition ().y);
+            individualComponentContainer[ypos].push_back(e);            
+        }
+        else
+        {
+            if(wholeShapeMoved)
+            {
+                for (auto& s : ((e.second))->getShapeContianer ())
+                {
+                    auto yval = getAllowedYVal((*s)->getPosition().y); 
+                    individualComponentContainer[yval].push_back(std::make_pair (s, e.second));
+                }
+            }
+        }
+
+    }
+
+
+    if(wholeShapeMoved)
+    {
+        for(auto&[originalY, originalXs] : wholeShapeXY)
+        {
+            for(auto& x1 : originalXs)
+            {
+                    // if whole shape like stick which is vertical falls, then new position might overlap with older position
+                    // so only remove single square  in case they overlap, not 2 and for that count variable is used
+                    // if count is more that 0 means we have seen this square at this position and dont remove it 
+                    unsigned int count = 0;
+                    individualComponentContainer[originalY].erase(
+                        std::remove_if(individualComponentContainer[originalY].begin(),
+                                        individualComponentContainer[originalY].end(),
+                                        [&count,&x1](std::pair<sf::RectangleShape**, IShape*>& element)
+                                        {
+                                            if((static_cast<int>(abs((*(element.first))->getPosition().x-x1)) < 2) && !element.second->isShapeBroken() && count == 0)
+                                            {
+                                                count++;
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                return false;
+                                            }
+                                        }
+                    ), individualComponentContainer[originalY].end());
+            }
+        }
+    }
+
+    if(individualComponentContainer[sourceY].size() > 0)
+    {
+        individualComponentContainer[sourceY].erase(
+            std::remove_if(individualComponentContainer[sourceY].begin(),
+                            individualComponentContainer[sourceY].end(),
+                            [](std::pair<sf::RectangleShape**, IShape*> element)
+                            {
+                                return ((element.second)->isShapeBroken());
+                            }
+                            
+        ),individualComponentContainer[sourceY].end());
+    }
+
 
 }
 
@@ -447,10 +494,19 @@ void DisplayContainer::shiftStructureDownward (sf::RenderWindow& displayWindow) 
         }
     }
 
-    if (shiftRequired) 
-    {
-        makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
+    if (shiftRequired) {
+        for (auto it = individualComponentContainer.rbegin ();
+             it != individualComponentContainer.rend (); it++) {
+
+            if (it->first <= startShiftYVal) 
+            {
+                makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
+                startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+                fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+            }
+        }
     }
+
     
 }
 
@@ -459,6 +515,7 @@ void DisplayContainer::checkFullRows (sf::RenderWindow& displayWindow) {
         bool removeRows = false;
         for (auto it = individualComponentContainer.rbegin ();
              it != individualComponentContainer.rend (); it++) {
+            std::cout<<it->first<<"----"<<it->second.size()<<std::endl;
             if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
                 shiftStructureDownward (displayWindow);
                 removeRows = true;
