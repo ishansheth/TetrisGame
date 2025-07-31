@@ -6,9 +6,10 @@
 #include <unordered_map>
 
 #define STRINGYFY(x) #x
-#define TOSTRINGYFY(x) STRINGYFY (x)
+#define TOSTRINGYFY(x) STRINGYFY(x)
 
-enum class GameFontStrings {
+enum class GameFontStrings
+{
     NEXT_SHAPE_LABEL,
     SCORE_LABEL,
     SCORE_VALUE,
@@ -21,27 +22,27 @@ enum class GameFontStrings {
 };
 
 static const std::unordered_map<GameFontStrings, std::string> fontKeyToStrings{
-    { GameFontStrings::NEXT_SHAPE_LABEL, "Next Shape:" },
-    { GameFontStrings::SCORE_LABEL, "Score:" },
-    { GameFontStrings::SCORE_VALUE, "0" },
-    { GameFontStrings::GAME_OVER, "        GAME OVER! \n Press \"R\" to Continue, \"E\" to exit " },
-    { GameFontStrings::GAME_PAUSED, "Paused" },
-    { GameFontStrings::STAGE_LABEL, "Stage:" },
-    { GameFontStrings::STAGE_VALUE, "" },
-    { GameFontStrings::STAGE_COMPLETE_MESSAGE, ""}
-};
+    {GameFontStrings::NEXT_SHAPE_LABEL, "Next Shape:"},
+    {GameFontStrings::SCORE_LABEL, "Score:"},
+    {GameFontStrings::SCORE_VALUE, "0"},
+    {GameFontStrings::GAME_OVER, "        GAME OVER! \n Press \"R\" to Continue, \"E\" to exit "},
+    {GameFontStrings::GAME_PAUSED, "Paused"},
+    {GameFontStrings::STAGE_LABEL, "Stage:"},
+    {GameFontStrings::STAGE_VALUE, ""},
+    {GameFontStrings::STAGE_COMPLETE_MESSAGE, ""}};
 
-class FontContainer {
+class FontContainer
+{
     std::unordered_map<GameFontStrings, sf::Text> fContainer;
     sf::Font gameFont;
     std::string fontFilePath;
 
-    public:
-    FontContainer ();
-    void addFont (const GameFontStrings, int x, int y);
+  public:
+    FontContainer();
+    void addFont(const GameFontStrings, int x, int y);
 
-    void drawFonts (sf::RenderWindow&);
-    void setFontString (const GameFontStrings, const std::string&);
-    void drawSingleString (sf::RenderWindow&, const GameFontStrings);
-    void drawSingleString (sf::RenderWindow& displayWindow, const GameFontStrings label,int x, int y);
+    void drawFonts(sf::RenderWindow &);
+    void setFontString(const GameFontStrings, const std::string &);
+    void drawSingleString(sf::RenderWindow &, const GameFontStrings);
+    void drawSingleString(sf::RenderWindow &displayWindow, const GameFontStrings label, int x, int y);
 };
