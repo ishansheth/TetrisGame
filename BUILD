@@ -9,6 +9,7 @@ cc_binary(
             "src/DisplayContainer.cpp",
             "src/ShapeGenerator.cpp",
             "src/StageManager.cpp",
+            "src/ParticleSystem.cpp",
             "include/StageManager.h",
             "include/Util.h",
             "include/ParticleSystem.h",
