@@ -5,8 +5,6 @@
 #include <string_view>
 #include <unordered_map>
 
-#define STRINGYFY(x) #x
-#define TOSTRINGYFY(x) STRINGYFY(x)
 
 enum class GameFontStrings
 {

@@ -8,8 +8,8 @@
 
 static unsigned int idx = 0;
 
-static constexpr unsigned int arr_len = 16 + 4;
-static constexpr unsigned int testShapes[arr_len] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 2};
+static constexpr unsigned int arr_len = 16;
+static constexpr unsigned int testShapes[arr_len] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6};
 
 IShape *ShapeGenerator::getNextShape(sf::Vector2f position, DisplayContainer *dCont)
 {
@@ -120,11 +120,11 @@ void ShapeGenerator::generateShapes()
     {
         auto shapeNumber = uniformDistribution(rng);
 
-        // shapeIndexArray[0] = shapeIndexArray[1];
-        // shapeIndexArray[1] = shapeNumber;
+        shapeIndexArray[0] = shapeIndexArray[1];
+        shapeIndexArray[1] = shapeNumber;
 
-        shapeIndexArray[0] = 2;
-        shapeIndexArray[1] = 2;
+        // shapeIndexArray[0] = 2;
+        // shapeIndexArray[1] = 2;
     }
 }
 

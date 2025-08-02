@@ -36,6 +36,7 @@ cc_binary(
     defines = [
         'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
         'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
+        'BOMB_IMAGE="/TetrisGame/resources/textures/bomb_texture.png"',
         'SOUND_FOLDER_PATH="/TetrisGame/resources/sounds/"',
         'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        

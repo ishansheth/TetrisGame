@@ -81,7 +81,7 @@ class BaseShape : public IShape
         shapeContainer.clear();
     }
 
-    std::vector<sf::RectangleShape **> getShapeContianer()
+    std::vector<sf::RectangleShape **> getShapeContianer() override
     {
         return shapeContainer;
     }

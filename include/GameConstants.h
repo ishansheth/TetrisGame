@@ -6,6 +6,8 @@
 ///////////////////////////////////////////////////// Window and shape parameter const
 /////////////////////////////////////
 static constexpr unsigned int SQUARE_SIDE_LENGTH = 20;
+static constexpr unsigned int BOMB_SQUARE_SIDE_LENGTH = 40;
+
 static constexpr unsigned int SQUARE_OUTLINE_THICKNESS = 2;
 static constexpr unsigned int HALF_SQUARE_LENGTH = 13;
 
@@ -63,7 +65,11 @@ static constexpr unsigned int SCORE_PER_ROW = 10;
 
 static constexpr unsigned int CLEARING_SCORE_PER_STAGE[] = {50, 150, 500, 1000};
 
+static constexpr unsigned int NO_ROWS_DESROYED_BY_BOMB = 3;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const char *BLIP_SOUND_FILE_NAME = "hitHurt.wav";
 static const char *EXPLOSION_SOUND_FILE_NAME = "explosion.wav";
+static const char *BOMB_EXPLOSION_SOUND_FILE_NAME = "bomb_explosion.wav";
+

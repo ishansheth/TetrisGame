@@ -53,7 +53,12 @@ class DisplayContainer
     sf::SoundBuffer rowRemovedExplosionSoundBuffer;
     sf::Sound rowRemovedExplosionSound;
 
+    sf::SoundBuffer bombExplosionSoundBuffer;
+    sf::Sound bombExplosionSound;
+
     std::vector<ParticleSystem> rowCollapseParticleSystems;
+    ParticleSystem bombExplosionParticles;
+
     int xCoordinateEmitter;
     sf::Clock particleSystemUpdateTimer;
 
@@ -73,7 +78,7 @@ class DisplayContainer
 
     int getLowestYVal(const int x, const int refY);
 
-    void shiftStructureDownward(sf::RenderWindow &displayWindow);
+    void shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal);
 
     void checkFullRows(sf::RenderWindow &displayWindow);
 
@@ -89,7 +94,9 @@ class DisplayContainer
 
     void moveShapes();
 
-    void handleBombDrop(IShape *);
+    void handleBombDrop(sf::RenderWindow &displayWindow);
+
+    void drawDisplayContainer(sf::RenderWindow &displayWindow);
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
