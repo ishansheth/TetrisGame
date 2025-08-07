@@ -38,6 +38,7 @@ cc_binary(
         'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
         'BOMB_IMAGE="/TetrisGame/resources/textures/bomb_texture.png"',
         'SOUND_FOLDER_PATH="/TetrisGame/resources/sounds/"',
+        'META_DATA_FILE_PATH="/TetrisGame/resources/files/"',
         'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        
     ],

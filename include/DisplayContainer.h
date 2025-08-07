@@ -10,6 +10,8 @@
 #include <random>
 #include <set>
 #include <unordered_map>
+#include <fstream>
+#include <cstdint>
 
 static const sf::Vertex partitionLine[] = {sf::Vertex(sf::Vector2f(DRAW_WINDOW_WIDTH, 1.f)),
                                            sf::Vertex(sf::Vector2f(DRAW_WINDOW_WIDTH, WINDOW_HEIGHT - 0.1f))};
@@ -59,7 +61,6 @@ class DisplayContainer
     std::vector<ParticleSystem> rowCollapseParticleSystems;
     ParticleSystem bombExplosionParticles;
 
-    int xCoordinateEmitter;
     sf::Clock particleSystemUpdateTimer;
 
     FontContainer &fContainerRef;
@@ -75,6 +76,15 @@ class DisplayContainer
     // state variables
     bool isGameOverState;
     bool isGamePaused;
+    bool displayEnterUsernameScreen;
+    
+    std::string highscoreusername;
+
+    std::fstream metadataFileHandle;
+    std::string metadataFile;
+
+    // since this will be written in file, keep 4 byte size
+    uint32_t highScoreValue;
 
     int getLowestYVal(const int x, const int refY);
 
@@ -97,6 +107,11 @@ class DisplayContainer
     void handleBombDrop(sf::RenderWindow &displayWindow);
 
     void drawDisplayContainer(sf::RenderWindow &displayWindow);
+
+    void saveHighScoreInFile();
+
+    void prepeareMeatadataFile();
+
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);

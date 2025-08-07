@@ -8,8 +8,8 @@
 
 static unsigned int idx = 0;
 
-static constexpr unsigned int arr_len = 16;
-static constexpr unsigned int testShapes[arr_len] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 6, 6};
+static constexpr unsigned int arr_len = 14;
+static constexpr unsigned int testShapes[arr_len] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
 
 IShape *ShapeGenerator::getNextShape(sf::Vector2f position, DisplayContainer *dCont)
 {
@@ -109,7 +109,6 @@ IShape *ShapeGenerator::getShape(sf::Vector2f position, DisplayContainer *dCont)
 
 void ShapeGenerator::generateShapes()
 {
-
     if (idx < arr_len - 1)
     {
         shapeIndexArray[0] = testShapes[idx];

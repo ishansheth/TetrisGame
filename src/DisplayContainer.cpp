@@ -2,13 +2,14 @@
 #include "Util.h"
 #include <iostream>
 #include <thread>
+#include <filesystem>
+#include <sys/stat.h>
 
 DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
-    : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), moveStatus(true), scoreValue(0),
-      isGameOverState(false), isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), xCoordinateEmitter(-100),
-      bombExplosionParticles(1000)
+    : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0),
+      isGameOverState(false), isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), highScoreValue(0),
+      bombExplosionParticles(1000), displayEnterUsernameScreen(false)
 {
-
     auto yVal = LAST_ROW_Y;
     for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
     {
@@ -45,11 +46,19 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
     {
         rowCollapseParticleSystems.emplace_back(1000);
     }
+
+    prepeareMeatadataFile();
 }
 
 bool DisplayContainer::isGameOver()
-{
-    return (individualComponentContainer[FIRST_ROW_Y].size() > 0);
+{   
+    if(isGameOverState)
+        return isGameOverState;
+
+    if(individualComponentContainer[rowYCoordinate.back()].size() > 0)
+    {
+        isGameOverState = true;
+    }
 }
 
 // check of falling shape is intersecting with currently displayed shapes
@@ -149,7 +158,8 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
 
     drawDisplayContainer(displayWindow);
 
-    fContainerRef.setFontString(GameFontStrings::SCORE_VALUE, std::to_string(getScore()));
+    fContainerRef.setFontString(GameFontStrings::HIGH_SCORE_VALUE, std::to_string(highScoreValue));
+    fContainerRef.setFontString(GameFontStrings::SCORE_VALUE, std::to_string(scoreValue));
     fContainerRef.setFontString(GameFontStrings::STAGE_VALUE, std::to_string(currentStageNumber));
 }
 
@@ -258,7 +268,7 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
         return;
     }
 
-    moveStatus = lastShape->getMoveStatus();
+    auto moveStatus = lastShape->getMoveStatus();
     if (!moveStatus)
     {
 
@@ -513,11 +523,9 @@ void DisplayContainer::shiftStructureDownward(sf::RenderWindow &displayWindow, u
 {
     int startShiftYVal = yVal - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     int fullRowYVal = yVal;
-    bool shiftRequired = false;
 
     eraseCompletedRow(yVal,displayWindow);
     scoreValue += SCORE_PER_ROW;
-    shiftRequired = true;
 
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
@@ -556,30 +564,83 @@ void DisplayContainer::checkFullRows(sf::RenderWindow &displayWindow)
 void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
 {
     if (isGameOver())
-    {
-        isGameOverState = true;
-        scoreValue = 0;
+    {   
+        if(highScoreValue < scoreValue)
+        {
+            displayEnterUsernameScreen = true;
+            highScoreValue = scoreValue;
+            highscoreusername.clear();
+        }
+        scoreValue = 0;        
         cleanDisplayContainer();
-        fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER);
+        fContainerRef.drawSingleString (displayWindow, GameFontStrings::GAME_OVER);
         sf::Event event;
 
-        while (displayWindow.pollEvent(event))
+        while (displayWindow.pollEvent (event)) 
         {
-            if (event.type == sf::Event::KeyPressed)
+            if (event.type == sf::Event::KeyPressed) 
             {
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+                if(displayEnterUsernameScreen)
+                {
+                    if (sf::Keyboard::isKeyPressed (sf::Keyboard::A)) highscoreusername += "a";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::B)) highscoreusername += "b";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::C)) highscoreusername += "c";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::D)) highscoreusername += "d";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::E)) highscoreusername += "e";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::F)) highscoreusername += "f";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::G)) highscoreusername += "g";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::H)) highscoreusername += "h";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::I)) highscoreusername += "i";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::J)) highscoreusername += "j";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::K)) highscoreusername += "k";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::L)) highscoreusername += "l";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::M)) highscoreusername += "m";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::N)) highscoreusername += "n";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::O)) highscoreusername += "o";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::P)) highscoreusername += "p";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Q)) highscoreusername += "q";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::R)) highscoreusername += "r";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::S)) highscoreusername += "s";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::T)) highscoreusername += "t";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::U)) highscoreusername += "u";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::V)) highscoreusername += "v";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::W)) highscoreusername += "w";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::X)) highscoreusername += "x";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Y)) highscoreusername += "y";
+                    else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Z)) highscoreusername += "z";                
+                    else if(sf::Keyboard::isKeyPressed (sf::Keyboard::Enter))
+                    {
+                        displayEnterUsernameScreen = false;
+                        saveHighScoreInFile();
+                    }
+                    
+                }
+                
+                if (sf::Keyboard::isKeyPressed (sf::Keyboard::F10)) 
                 {
                     isGameOverState = false;
-                    generateAndDrawShape(displayWindow);
+                    generateAndDrawShape (displayWindow);
                     break;
-                }
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+                } 
+                else if (sf::Keyboard::isKeyPressed (sf::Keyboard::Escape)) 
                 {
-                    displayWindow.close();
+                    displayWindow.close ();
                     break;
                 }
             }
+        }            
+
+        if(displayEnterUsernameScreen)
+        {
+            fContainerRef.setFontString(GameFontStrings::USERNAME_INPUT_STRING, highscoreusername);
+            fContainerRef.drawSingleString (displayWindow, GameFontStrings::ENTER_HIGHSCORE_USERNAME);
+            fContainerRef.drawSingleString (displayWindow, GameFontStrings::USERNAME_INPUT_STRING);
         }
+        else
+        {
+            fContainerRef.drawSingleString (displayWindow, GameFontStrings::GAME_OVER_USER_SELECTION);
+        }
+
     }
     else if (isGamePaused)
     {
@@ -733,3 +794,33 @@ void DisplayContainer::cleanDisplayContainer()
         it->second.clear();
     }
 }
+
+void DisplayContainer::prepeareMeatadataFile()
+{   
+    metadataFile = std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH)) + std::string(MEATA_DATA_FILE_NAME);
+    std::cout<<metadataFile<<std::endl;
+    bool fileexist = std::filesystem::exists(metadataFile);
+    if(fileexist)
+    {
+        metadataFileHandle.open(metadataFile, std::ios::out | std::ios::in | std::ios::binary);
+        if(metadataFileHandle.is_open())
+            std::cout<<"file is opened"<<std::endl;
+    }
+    else
+    {
+        auto dirPath = std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH));
+        mkdir(dirPath.c_str(),0777);
+        metadataFileHandle.open(metadataFile, std::ios::out | std::ios::binary);
+        if(metadataFileHandle.is_open())
+            std::cout<<"file is created and opened"<<std::endl;
+
+    }
+
+}
+
+void DisplayContainer::saveHighScoreInFile()
+{
+    metadataFileHandle.write(highscoreusername.c_str(), highscoreusername.size());
+    metadataFileHandle.write( reinterpret_cast<const char*>(&highScoreValue), sizeof(highScoreValue));
+}
+

@@ -21,12 +21,11 @@ static constexpr float SHAPE_DOWN_FALL_SPEED_X = 0.f;
 // this is not a constant, it value changes
 static float SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
 
-static constexpr unsigned int NUMBER_OF_ROWS_IN_GAME = 22;
+static constexpr unsigned int NUMBER_OF_ROWS_IN_GAME = 23;
 
 static constexpr unsigned int NEXT_SHAPE_X = DRAW_WINDOW_WIDTH + 10;
 static constexpr unsigned int NEXT_SHAPE_Y = 50;
 
-static constexpr unsigned int FIRST_ROW_Y = 4;
 static constexpr unsigned int LAST_ROW_Y = DRAW_WINDOW_HEIGHT - SQUARE_SIDE_LENGTH - 2 * SQUARE_OUTLINE_THICKNESS;
 
 static constexpr unsigned int NUMBER_OF_STAGE_IN_GAME = 3;
@@ -52,8 +51,17 @@ static constexpr unsigned int STAGE_LEBEL_Y = 210;
 static constexpr unsigned int STAGE_VALUE_X = DRAW_WINDOW_WIDTH + 80;
 static constexpr unsigned int STAGE_VALUE_Y = 210;
 
+static constexpr unsigned int HIGH_SCORE_STRING_X = DRAW_WINDOW_WIDTH + 10;
+static constexpr unsigned int HIGH_SCORE_STRING_Y = 250;
+
+static constexpr unsigned int HIGH_SCORE_VALUE_X = DRAW_WINDOW_WIDTH + 130;
+static constexpr unsigned int HIGH_SCORE_VALUE_Y = 252;
+
 static constexpr unsigned int STAGE_COMPLETE_MSG_X = 250;
 static constexpr unsigned int STAGE_COMPLETE_MSG_Y = 200;
+
+static constexpr unsigned int ENTER_UNSERNAME_STRING_X = 50;
+static constexpr unsigned int ENTER_UNSERNAME_STRING_Y = 50;
 
 static constexpr unsigned int FONT_GAMEOVER_X = 250;
 static constexpr unsigned int FONT_GAMEOVER_Y = 200;
@@ -72,4 +80,5 @@ static constexpr unsigned int NO_ROWS_DESROYED_BY_BOMB = 3;
 static const char *BLIP_SOUND_FILE_NAME = "hitHurt.wav";
 static const char *EXPLOSION_SOUND_FILE_NAME = "explosion.wav";
 static const char *BOMB_EXPLOSION_SOUND_FILE_NAME = "bomb_explosion.wav";
+static const char* MEATA_DATA_FILE_NAME = "tetrismetadata.bin";
 

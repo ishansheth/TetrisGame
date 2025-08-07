@@ -16,29 +16,58 @@ enum class GameFontStrings
     GAME_PAUSED,
     STAGE_LABEL,
     STAGE_VALUE,
-    STAGE_COMPLETE_MESSAGE
+    STAGE_COMPLETE_MESSAGE,
+    HIGH_SCORE_STRING,
+    HIGH_SCORE_VALUE,
+    USERNAME_INPUT_STRING,
+    ENTER_HIGHSCORE_USERNAME,
+    MAXIMUM_NUMBER_OF_FONTS
 };
 
 static const std::unordered_map<GameFontStrings, std::string> fontKeyToStrings{
     {GameFontStrings::NEXT_SHAPE_LABEL, "Next Shape:"},
     {GameFontStrings::SCORE_LABEL, "Score:"},
     {GameFontStrings::SCORE_VALUE, "0"},
-    {GameFontStrings::GAME_OVER, "        GAME OVER! \n Press \"R\" to Continue, \"E\" to exit "},
+    {GameFontStrings::GAME_OVER, "GAME OVER!"},
+    {GameFontStrings::GAME_OVER_USER_SELECTION, "Press \"F10\" to Continue, \"Esc\" to exit "},
+    {GameFontStrings::ENTER_HIGHSCORE_USERNAME, "New HighScore Achieved!! \nEnter Name:"},
+    {GameFontStrings::USERNAME_INPUT_STRING, ""},    
     {GameFontStrings::GAME_PAUSED, "Paused"},
     {GameFontStrings::STAGE_LABEL, "Stage:"},
     {GameFontStrings::STAGE_VALUE, ""},
-    {GameFontStrings::STAGE_COMPLETE_MESSAGE, ""}};
+    {GameFontStrings::HIGH_SCORE_STRING, "High Score:"},
+    {GameFontStrings::HIGH_SCORE_VALUE, "0"},
+    {GameFontStrings::STAGE_COMPLETE_MESSAGE, ""}
+};
+
+static const std::unordered_map<GameFontStrings, sf::Vector2f> stringToLocation{
+    {GameFontStrings::NEXT_SHAPE_LABEL, {DRAW_WINDOW_WIDTH + 10, 10}},
+    {GameFontStrings::SCORE_LABEL, {DRAW_WINDOW_WIDTH + 10, 130}},
+    {GameFontStrings::SCORE_VALUE, {DRAW_WINDOW_WIDTH + 10, 160}},
+    {GameFontStrings::GAME_OVER, {250,200}},
+    {GameFontStrings::ENTER_HIGHSCORE_USERNAME, {250,240}},
+    // fix the location of this string
+    {GameFontStrings::USERNAME_INPUT_STRING, {400,340}},
+    {GameFontStrings::GAME_OVER_USER_SELECTION, {250,240}},
+    {GameFontStrings::GAME_PAUSED, {250,200}},
+    {GameFontStrings::STAGE_LABEL, {DRAW_WINDOW_WIDTH + 10, 210}},
+    {GameFontStrings::STAGE_VALUE, {DRAW_WINDOW_WIDTH + 80, 210}},
+    {GameFontStrings::HIGH_SCORE_STRING, {DRAW_WINDOW_WIDTH + 10, 250}},
+    {GameFontStrings::HIGH_SCORE_VALUE, {DRAW_WINDOW_WIDTH + 130, 252}},
+    {GameFontStrings::STAGE_COMPLETE_MESSAGE, {250,200}}
+};
 
 class FontContainer
 {
     std::unordered_map<GameFontStrings, sf::Text> fContainer;
     sf::Font gameFont;
     std::string fontFilePath;
+    
+    void addFont(const GameFontStrings&);
 
   public:
     FontContainer();
-    void addFont(const GameFontStrings, int x, int y);
-
+    void initializeFontContainer();
     void drawFonts(sf::RenderWindow &);
     void setFontString(const GameFontStrings, const std::string &);
     void drawSingleString(sf::RenderWindow &, const GameFontStrings);
