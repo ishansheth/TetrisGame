@@ -9,6 +9,7 @@ cc_binary(
             "src/DisplayContainer.cpp",
             "src/ShapeGenerator.cpp",
             "src/StageManager.cpp",
+            "src/ParticleSystem.cpp",
             "include/StageManager.h",
             "include/Util.h",
             "include/ParticleSystem.h",
@@ -35,7 +36,9 @@ cc_binary(
     defines = [
         'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
         'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
+        'BOMB_IMAGE="/TetrisGame/resources/textures/bomb_texture.png"',
         'SOUND_FOLDER_PATH="/TetrisGame/resources/sounds/"',
+        'META_DATA_FILE_PATH="/TetrisGame/resources/files/"',
         'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        
     ],
