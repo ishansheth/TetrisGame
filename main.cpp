@@ -29,7 +29,11 @@ int main () {
 
         while (displayWindow.pollEvent (event)) {
             if (event.type == sf::Event::Closed)
+            {
+                displayContainer.cleanDisplayContainer();
+                displayContainer.saveHighScoreInFile();
                 displayWindow.close ();
+            }
         }
         if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));

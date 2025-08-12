@@ -78,13 +78,17 @@ class DisplayContainer
     bool isGamePaused;
     bool displayEnterUsernameScreen;
     
-    std::string highscoreusername;
+    std::string highScoreUsername;
+    uint32_t currentscore;
+    std::string highScoreDisplayData;
+    
+    std::vector<std::pair<uint32_t,std::string>> savedHighScoreData;
 
+    uint32_t minHighScore;
+    uint32_t maxHighScore;
+    
     std::fstream metadataFileHandle;
     std::string metadataFile;
-
-    // since this will be written in file, keep 4 byte size
-    uint32_t highScoreValue;
 
     int getLowestYVal(const int x, const int refY);
 
@@ -96,8 +100,6 @@ class DisplayContainer
 
     void drawShape(sf::RenderWindow &displayWindow);
 
-    int getScore();
-
     bool isGameOver();
 
     int getAllowedYVal(const float yCoordinate);
@@ -107,8 +109,6 @@ class DisplayContainer
     void handleBombDrop(sf::RenderWindow &displayWindow);
 
     void drawDisplayContainer(sf::RenderWindow &displayWindow);
-
-    void saveHighScoreInFile();
 
     void prepeareMeatadataFile();
 
@@ -139,4 +139,7 @@ class DisplayContainer
     void prepareDefaultScreenItems(sf::RenderWindow &displayWindow);
 
     void eraseCompletedRow(int removedRowY, sf::RenderWindow &displayWindow);
+
+    void saveHighScoreInFile();
+
 };

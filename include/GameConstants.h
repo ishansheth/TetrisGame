@@ -75,6 +75,7 @@ static constexpr unsigned int CLEARING_SCORE_PER_STAGE[] = {50, 150, 500, 1000};
 
 static constexpr unsigned int NO_ROWS_DESROYED_BY_BOMB = 3;
 
+static constexpr unsigned int NO_SAVED_HIGHSCORE_USERNAMES = 5; 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const char *BLIP_SOUND_FILE_NAME = "hitHurt.wav";

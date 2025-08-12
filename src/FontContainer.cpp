@@ -35,8 +35,8 @@ void FontContainer::drawFonts(sf::RenderWindow &displayWindow)
     displayWindow.draw(fContainer[GameFontStrings::SCORE_LABEL]);
     displayWindow.draw(fContainer[GameFontStrings::STAGE_LABEL]);
     displayWindow.draw(fContainer[GameFontStrings::STAGE_VALUE]);
-    displayWindow.draw(fContainer[GameFontStrings::HIGH_SCORE_STRING]);
-    displayWindow.draw(fContainer[GameFontStrings::HIGH_SCORE_VALUE]);
+    displayWindow.draw(fContainer[GameFontStrings::HIGH_SCORE_BOARD_STRING]);
+    displayWindow.draw(fContainer[GameFontStrings::HIGH_SCORE_VALUES]);
 }
 
 void FontContainer::drawSingleString(sf::RenderWindow &displayWindow, const GameFontStrings label)
