@@ -42,6 +42,14 @@ static const sf::Vertex borderLine3[] = {sf::Vertex(sf::Vector2f(WINDOW_WIDTH - 
 static const sf::Vertex borderLine4[] = {sf::Vertex(sf::Vector2f(1.f, WINDOW_HEIGHT - 0.1f)),
                                          sf::Vertex(sf::Vector2f(1.f, 1.f))};
 
+static const sf::Vertex highscore_partition_line1[] = {sf::Vertex(sf::Vector2f(DRAW_WINDOW_WIDTH, 240)),
+                                         sf::Vertex(sf::Vector2f(WINDOW_WIDTH, 240))};
+
+static const sf::Vertex highscore_partition_line2[] = {sf::Vertex(sf::Vector2f(DRAW_WINDOW_WIDTH, 242)),
+                                        sf::Vertex(sf::Vector2f(WINDOW_WIDTH, 242))};
+
+
+
 class DisplayContainer
 {
 
@@ -77,6 +85,7 @@ class DisplayContainer
     bool isGameOverState;
     bool isGamePaused;
     bool displayEnterUsernameScreen;
+    bool highScoreAchieved;
     
     std::string highScoreUsername;
     uint32_t currentscore;
