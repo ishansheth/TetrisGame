@@ -50,6 +50,7 @@ class BombShape : public BaseShape
 
     virtual ~BombShape()
     {
+        delete rectangle5;
     }
 
 

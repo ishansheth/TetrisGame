@@ -121,6 +121,7 @@ class DisplayContainer
 
     void prepeareMeatadataFile();
 
+    void prepareHighscoreDisplaydata();
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);

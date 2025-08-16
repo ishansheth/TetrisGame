@@ -36,42 +36,14 @@ static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {
 ///////////////////////////////////////////////////
 static constexpr unsigned int FONT_SIZE = 24;
 
-static constexpr unsigned int FONT_NEXT_SHAPE_X = DRAW_WINDOW_WIDTH + 10;
-static constexpr unsigned int FONT_NEXT_SHAPE_Y = 10;
-
-static constexpr unsigned int FONT_SCORE_X = DRAW_WINDOW_WIDTH + 10;
-static constexpr unsigned int FONT_SCORE_Y = 130;
-
-static constexpr unsigned int FONT_SCORE_VALUE_X = DRAW_WINDOW_WIDTH + 10;
-static constexpr unsigned int FONT_SCORE_VALUE_Y = 160;
-
-static constexpr unsigned int STAGE_LEBEL_X = DRAW_WINDOW_WIDTH + 10;
-static constexpr unsigned int STAGE_LEBEL_Y = 210;
-
-static constexpr unsigned int STAGE_VALUE_X = DRAW_WINDOW_WIDTH + 80;
-static constexpr unsigned int STAGE_VALUE_Y = 210;
-
-static constexpr unsigned int HIGH_SCORE_STRING_X = DRAW_WINDOW_WIDTH + 10;
-static constexpr unsigned int HIGH_SCORE_STRING_Y = 250;
-
-static constexpr unsigned int HIGH_SCORE_VALUE_X = DRAW_WINDOW_WIDTH + 130;
-static constexpr unsigned int HIGH_SCORE_VALUE_Y = 252;
-
 static constexpr unsigned int STAGE_COMPLETE_MSG_X = 250;
 static constexpr unsigned int STAGE_COMPLETE_MSG_Y = 200;
 
-static constexpr unsigned int ENTER_UNSERNAME_STRING_X = 50;
-static constexpr unsigned int ENTER_UNSERNAME_STRING_Y = 50;
-
-static constexpr unsigned int FONT_GAMEOVER_X = 250;
-static constexpr unsigned int FONT_GAMEOVER_Y = 200;
-
-static constexpr unsigned int GAME_PAUSED_X = 250;
-static constexpr unsigned int GAME_PAUSED_Y = 200;
-
 static constexpr unsigned int SCORE_PER_ROW = 10;
 
-static constexpr unsigned int CLEARING_SCORE_PER_STAGE[] = {50, 150, 500, 1000};
+// static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {300, 900, 2700};
+
+static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {50, 100, 150};
 
 static constexpr unsigned int NO_ROWS_DESROYED_BY_BOMB = 3;
 

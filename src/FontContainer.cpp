@@ -2,6 +2,13 @@
 
 FontContainer::FontContainer()
 {
+    static_assert(static_cast<int>(GameFontStrings::NEXT_SHAPE_LABEL) == 0,
+                "GameFontStrings must start at zero");
+    static_assert(static_cast<int>(GameFontStrings::MAXIMUM_NUMBER_OF_FONTS) ==
+                static_cast<int>(GameFontStrings::ENTER_USERNAME) + 1,
+                "GameFontStrings must remain contiguous");
+
+
     std::string fontFilePath = std::getenv("HOME") + std::string(TOSTRINGYFY(FONTS_FILE_PATH));
     gameFont.loadFromFile(fontFilePath);
 }

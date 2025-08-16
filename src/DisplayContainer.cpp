@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <thread>
+#include <string.h>
 
 DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
     : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
@@ -60,6 +61,7 @@ bool DisplayContainer::isGameOver()
     {
         isGameOverState = true;
     }
+    return isGameOverState;
 }
 
 // check of falling shape is intersecting with currently displayed shapes
@@ -589,209 +591,137 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
 
         scoreValue = 0;
         fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER);
-        sf::Event event;
 
-        while (displayWindow.pollEvent(event))
+        if (displayEnterUsernameScreen)
         {
-            if (event.type == sf::Event::KeyPressed)
+            bool shiftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
+
+            for(unsigned int key = sf::Keyboard::A; key <= sf::Keyboard::Z; key++)
             {
-                if (displayEnterUsernameScreen)
+                if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
                 {
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                    std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                    if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
                     {
-                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-                            highScoreUsername += "A";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
-                            highScoreUsername += "B";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
-                            highScoreUsername += "C";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                            highScoreUsername += "D";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
-                            highScoreUsername += "E";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F))
-                            highScoreUsername += "F";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
-                            highScoreUsername += "G";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::H))
-                            highScoreUsername += "H";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::I))
-                            highScoreUsername += "I";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J))
-                            highScoreUsername += "J";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::K))
-                            highScoreUsername += "K";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-                            highScoreUsername += "L";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::M))
-                            highScoreUsername += "M";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
-                            highScoreUsername += "N";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::O))
-                            highScoreUsername += "O";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
-                            highScoreUsername += "P";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-                            highScoreUsername += "Q";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-                            highScoreUsername += "R";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-                            highScoreUsername += "S";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-                            highScoreUsername += "T";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::U))
-                            highScoreUsername += "U";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V))
-                            highScoreUsername += "V";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-                            highScoreUsername += "W";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
-                            highScoreUsername += "X";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Y))
-                            highScoreUsername += "Y";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-                            highScoreUsername += "Z";
-                    }
-                    else
-                    {
-                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-                            highScoreUsername += "a";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
-                            highScoreUsername += "b";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
-                            highScoreUsername += "c";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                            highScoreUsername += "d";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
-                            highScoreUsername += "e";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::F))
-                            highScoreUsername += "f";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
-                            highScoreUsername += "g";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::H))
-                            highScoreUsername += "h";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::I))
-                            highScoreUsername += "i";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::J))
-                            highScoreUsername += "j";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::K))
-                            highScoreUsername += "k";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L))
-                            highScoreUsername += "l";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::M))
-                            highScoreUsername += "m";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
-                            highScoreUsername += "n";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::O))
-                            highScoreUsername += "o";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
-                            highScoreUsername += "p";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-                            highScoreUsername += "q";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-                            highScoreUsername += "r";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-                            highScoreUsername += "s";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-                            highScoreUsername += "t";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::U))
-                            highScoreUsername += "u";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V))
-                            highScoreUsername += "v";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-                            highScoreUsername += "w";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
-                            highScoreUsername += "x";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Y))
-                            highScoreUsername += "y";
-                        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-                            highScoreUsername += "z";
-                    }
-
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
-                        highScoreUsername += "0";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-                        highScoreUsername += "1";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-                        highScoreUsername += "2";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-                        highScoreUsername += "3";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
-                        highScoreUsername += "4";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
-                        highScoreUsername += "5";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
-                        highScoreUsername += "6";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
-                        highScoreUsername += "7";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
-                        highScoreUsername += "8";
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
-                        highScoreUsername += "9";
-
-                    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
-                    {
-                        displayEnterUsernameScreen = false;
-                        highScoreAchieved = false;
-                        savedHighScoreData.push_back(std::make_pair(currentscore, highScoreUsername));
-
-                        if (savedHighScoreData.size() > NO_SAVED_HIGHSCORE_USERNAMES)
-                        {
-                            std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
-                                      [](const auto &a, const auto &b) { return a.first > b.first; });
-
-                            savedHighScoreData.erase(std::prev(savedHighScoreData.end()));
-                        }
-                    }
+                        char letter = 'A' + (key - sf::Keyboard::A);
+                        highScoreUsername += shiftPressed ? letter : std::tolower(letter);    
+                        break;
+                    }                        
                 }
+            }
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::F10))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
+                    highScoreUsername += "0";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+                    highScoreUsername += "1";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+                    highScoreUsername += "2";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+                    highScoreUsername += "3";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
+                    highScoreUsername += "4";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
+                    highScoreUsername += "5";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
+                    highScoreUsername += "6";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
+                    highScoreUsername += "7";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
+                    highScoreUsername += "8";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
+                    highScoreUsername += "9";
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            {
+                displayEnterUsernameScreen = false;
+                highScoreAchieved = false;
+                savedHighScoreData.push_back(std::make_pair(currentscore, highScoreUsername));
+
+                if (savedHighScoreData.size() > NO_SAVED_HIGHSCORE_USERNAMES)
                 {
-                    isGameOverState = false;
-                    highScoreDisplayData.clear();
-                    cleanDisplayContainer();
-                    if (savedHighScoreData.size() > 0)
-                    {
+                    std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
+                                [](const auto &a, const auto &b) { return a.first > b.first; });
 
-                        if (highScoreUsername.size() > 0)
-                        {
-                            for (auto it = savedHighScoreData.begin(); it != savedHighScoreData.end(); it++)
-                            {
-                                if (it->second == highScoreUsername && currentscore > it->first)
-                                {
-                                    it->first = currentscore;
-                                    break;
-                                }
-                            }
-                        }
-
-                        // displaying in descending order
-                        std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
-                                  [](const auto &a, const auto &b) { return a.first > b.first; });
-
-                        minHighScore = std::prev(savedHighScoreData.end())->first;
-                        for (auto &[score, username] : savedHighScoreData)
-                        {
-                            highScoreDisplayData += username;
-                            highScoreDisplayData += ":";
-                            highScoreDisplayData += std::to_string(score);
-                            highScoreDisplayData += "\n";
-                        }
-                    }
-                    generateAndDrawShape(displayWindow);
-                    highScoreAchieved = false;
-                    break;
-                }
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-                {
-                    cleanDisplayContainer();
-                    saveHighScoreInFile();
-                    displayWindow.close();
-                    metadataFileHandle.close();
-                    break;
+                    savedHighScoreData.erase(std::prev(savedHighScoreData.end()));
                 }
             }
         }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::F10))
+        {
+            isGameOverState = false;
+            highScoreDisplayData.clear();
+            cleanDisplayContainer();
+            if (savedHighScoreData.size() > 0)
+            {
+
+                if (highScoreUsername.size() > 0)
+                {
+                    for (auto it = savedHighScoreData.begin(); it != savedHighScoreData.end(); it++)
+                    {
+                        if (it->second == highScoreUsername && currentscore > it->first)
+                        {
+                            it->first = currentscore;
+                            break;
+                        }
+                    }
+                }
+
+                prepareHighscoreDisplaydata();
+            }
+            generateAndDrawShape(displayWindow);
+            highScoreAchieved = false;
+
+
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+        {
+            cleanDisplayContainer();
+            saveHighScoreInFile();
+            displayWindow.close();
+            metadataFileHandle.close();
+        }
+            
+        
 
         if (displayEnterUsernameScreen)
         {
@@ -1018,19 +948,7 @@ void DisplayContainer::prepeareMeatadataFile()
             }
         }
 
-        if (savedHighScoreData.size() > 0)
-        {
-            // displaying in descending order
-            std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
-                      [](const auto &a, const auto &b) { return a.first > b.first; });
-            for (auto &[score, username] : savedHighScoreData)
-            {
-                highScoreDisplayData += username;
-                highScoreDisplayData += ":";
-                highScoreDisplayData += std::to_string(score);
-                highScoreDisplayData += "\n";
-            }
-        }
+        prepareHighscoreDisplaydata();
 
         metadataFileHandle.close();
         metadataFileHandle.open(metadataFile, std::ios::out | std::ios::binary);
@@ -1038,7 +956,10 @@ void DisplayContainer::prepeareMeatadataFile()
     else
     {
         auto dirPath = std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH));
-        mkdir(dirPath.c_str(), 0777);
+        if (mkdir(dirPath.c_str(), 0755) != 0 && errno != EEXIST) {
+            std::cerr << "Failed to create directory: " << dirPath << " - " << strerror(errno) << std::endl;
+        }
+
         metadataFileHandle.open(metadataFile, std::ios::out | std::ios::binary);
         if (metadataFileHandle.is_open())
             std::cout << "file is created and opened" << std::endl;
@@ -1057,5 +978,23 @@ void DisplayContainer::saveHighScoreInFile()
         metadataFileHandle.write(&comma, sizeof(comma));
         metadataFileHandle.write((char *)(&score), 4);
         metadataFileHandle.write(&semicolon, sizeof(semicolon));
+    }
+}
+
+
+void DisplayContainer::prepareHighscoreDisplaydata()
+{
+    if (savedHighScoreData.size() > 0)
+    {
+        // displaying in descending order
+        std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
+                    [](const auto &a, const auto &b) { return a.first > b.first; });
+        for (auto &[score, username] : savedHighScoreData)
+        {
+            highScoreDisplayData += username;
+            highScoreDisplayData += ":";
+            highScoreDisplayData += std::to_string(score);
+            highScoreDisplayData += "\n";
+        }
     }
 }

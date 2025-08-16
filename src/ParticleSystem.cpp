@@ -6,8 +6,8 @@ void ParticleSystem::resetParticle(const unsigned int idx)
     static std::random_device dev;
     static std::mt19937 rng(dev());
 
-    const float speedx = std::uniform_real_distribution(-2.f, 2.f)(rng);
-    const float speedy = std::uniform_real_distribution(-2.f, 2.f)(rng);
+    const float speedx = std::uniform_real_distribution<float>(-2.f, 2.f)(rng);
+    const float speedy = std::uniform_real_distribution<float>(-2.f, 2.f)(rng);
 
     particles[idx].velocity = sf::Vector2f(speedx, speedy);
     vertices[idx].position = particles[idx].emitterPos;
