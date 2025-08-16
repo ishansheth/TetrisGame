@@ -2,25 +2,26 @@
 #include "DisplayContainer.h"
 #include "IShape.h"
 
-class StageManager {
+class StageManager
+{
     unsigned int currentStageNumber;
     ShapeGenerator shapeGenerator;
 
     DisplayContainer disPlayContainer;
-    sf::RenderWindow& displayWindow;
+    sf::RenderWindow &displayWindow;
     std::vector<unsigned int> winScoreForStage;
     void setStageParameters();
 
-    std::vector<IShape*> getAllowedShapedOfStage ();
+    std::vector<IShape *> getAllowedShapedOfStage();
 
     void setWinningScoreForstage();
 
-    public:
-    StageManager (FontContainer& fCon, sf::RenderWindow& window);
+  public:
+    StageManager(FontContainer &fCon, sf::RenderWindow &window);
 
     void checkStageStatus();
 
-    void generateStageScreen ();
+    void generateStageScreen();
 
     void handleUserInput(sf::Keyboard::Key);
 
