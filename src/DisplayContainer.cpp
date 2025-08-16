@@ -6,6 +6,8 @@
 #include <thread>
 #include <string.h>
 
+float SHAPE_DOWN_FALL_SPEED_Y = 0.1;
+
 DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
     : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
       isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000),
@@ -720,8 +722,6 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
             displayWindow.close();
             metadataFileHandle.close();
         }
-            
-        
 
         if (displayEnterUsernameScreen)
         {
@@ -827,27 +827,25 @@ void DisplayContainer::resetGamePaused()
 
 void DisplayContainer::setParamtersForCurrentStage()
 {
+    SHAPE_DOWN_FALL_SPEED_Y = FALL_SPEED_FOR_STAGE[currentStageNumber - 1];
+
     if (currentStageNumber == 1)
     {
-        SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
         shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
     }
     else if (currentStageNumber == 2)
     {
-        // set allowed shapes
-        SHAPE_DOWN_FALL_SPEED_Y = 0.2f;
         shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
     }
     else if (currentStageNumber == 3)
     {
-        // set allowed shapes
-        SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
         shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
     }
     else if (currentStageNumber == 4)
     {
-        // set allowed shapes
-        SHAPE_DOWN_FALL_SPEED_Y = 0.7f;
+        // TODO: in the last stage, the whole structre will move upwards at regular interval, maybe 1 min
+        // for this add a row at the bottom with random x values
+        // or offer one more shape or power to the user
     }
 }
 

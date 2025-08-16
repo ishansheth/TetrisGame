@@ -19,7 +19,7 @@ static constexpr unsigned int DRAW_WINDOW_HEIGHT = 600;
 static constexpr float SHAPE_DOWN_FALL_SPEED_X = 0.f;
 
 // this is not a constant, it value changes
-static float SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
+extern float SHAPE_DOWN_FALL_SPEED_Y;
 
 static constexpr unsigned int NUMBER_OF_ROWS_IN_GAME = 23;
 
@@ -31,6 +31,7 @@ static constexpr unsigned int LAST_ROW_Y = DRAW_WINDOW_HEIGHT - SQUARE_SIDE_LENG
 static constexpr unsigned int NUMBER_OF_STAGE_IN_GAME = 3;
 
 static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {4, 5, 6};
+static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.2f, 0.5f, 0.7f};
 
 ///////////////////////////////////////////////////// Font related const
 ///////////////////////////////////////////////////
