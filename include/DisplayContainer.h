@@ -69,7 +69,8 @@ class DisplayContainer
     std::vector<ParticleSystem> rowCollapseParticleSystems;
     ParticleSystem bombExplosionParticles;
 
-    sf::Clock particleSystemUpdateTimer;
+    sf::Clock rowInsertionTimer;
+    sf::Time oneMinTime;
 
     FontContainer &fContainerRef;
     ShapeGenerator &shapeGen;
@@ -86,19 +87,12 @@ class DisplayContainer
     bool isGamePaused;
     bool displayEnterUsernameScreen;
     bool highScoreAchieved;
-    
+    bool insertRowsAtbottom;
+
     std::string highScoreUsername;
     uint32_t currentscore;
     std::string highScoreDisplayData;
     
-    std::vector<std::pair<uint32_t,std::string>> savedHighScoreData;
-
-    uint32_t minHighScore;
-    uint32_t maxHighScore;
-    
-    std::fstream metadataFileHandle;
-    std::string metadataFile;
-
     int getLowestYVal(const int x, const int refY);
 
     void shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal);
@@ -122,6 +116,8 @@ class DisplayContainer
     void prepeareMeatadataFile();
 
     void prepareHighscoreDisplaydata();
+
+    void insertRowAtBottom();
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);

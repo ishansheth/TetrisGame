@@ -18,12 +18,6 @@ struct SqShape : public BaseShape
     {
     }
 
-    IShape *clone(DisplayContainer *displayManager) override
-    {
-        SqShape *clonedObj = new SqShape(displayManager);
-        return clonedObj;
-    }
-
     virtual ~SqShape()
     {
     }

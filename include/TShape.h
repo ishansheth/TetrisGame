@@ -16,12 +16,6 @@ struct TShape : public BaseShape
     {
     }
 
-    IShape *clone(DisplayContainer *displayManager) override
-    {
-        TShape *clonedObj = new TShape(displayManager);
-        return clonedObj;
-    }
-
     virtual ~TShape()
     {
     }

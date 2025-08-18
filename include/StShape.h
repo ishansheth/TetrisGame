@@ -13,12 +13,6 @@ struct StShape : public BaseShape
     {
     }
 
-    IShape *clone(DisplayContainer *displayManager) override
-    {
-        StShape *clonedObj = new StShape(displayManager);
-        return clonedObj;
-    }
-
     virtual ~StShape()
     {
     }

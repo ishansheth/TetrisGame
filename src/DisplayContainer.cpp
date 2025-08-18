@@ -5,14 +5,15 @@
 #include <sys/stat.h>
 #include <thread>
 #include <string.h>
+#include "MetaFileHandler.h"
 
 float SHAPE_DOWN_FALL_SPEED_Y = 0.1;
 
 DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
     : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
       isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000),
-      displayEnterUsernameScreen(false), minHighScore(std::numeric_limits<unsigned int>::max()),
-      maxHighScore(std::numeric_limits<unsigned int>::min()), highScoreAchieved(false)
+      displayEnterUsernameScreen(false),highScoreAchieved(false), insertRowsAtbottom(false),
+      oneMinTime(sf::seconds(60))
 {
     auto yVal = LAST_ROW_Y;
     for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
@@ -51,7 +52,8 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
         rowCollapseParticleSystems.emplace_back(1000);
     }
 
-    prepeareMeatadataFile();
+    MetaFileHandler::readMetaDataFile();
+    prepareHighscoreDisplaydata();
 }
 
 bool DisplayContainer::isGameOver()
@@ -156,11 +158,82 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
     lastShape->drawShape(displayWindow);
     nextShape->drawShape(displayWindow);
 
-    drawDisplayContainer(displayWindow);
 
     fContainerRef.setFontString(GameFontStrings::HIGH_SCORE_VALUES, highScoreDisplayData);
     fContainerRef.setFontString(GameFontStrings::SCORE_VALUE, std::to_string(scoreValue));
     fContainerRef.setFontString(GameFontStrings::STAGE_VALUE, std::to_string(currentStageNumber));
+
+    drawDisplayContainer(displayWindow);
+
+    if(insertRowsAtbottom)
+    {
+        auto timeElapsed = rowInsertionTimer.restart();
+        oneMinTime -= timeElapsed;
+        if(oneMinTime <= sf::Time::Zero)
+        {
+            insertRowAtBottom();
+            oneMinTime = sf::seconds(60);
+        }
+
+    }
+}
+
+void DisplayContainer::insertRowAtBottom()
+{
+    // shift whole structre up by one row
+    for(auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+    {
+        if(it->second.size() > 0)
+        {
+            auto prevRowPtr = it;
+            prevRowPtr--;
+            for(auto& element : it->second)
+            {   
+                auto xpos = (*(element.first))->getPosition().x;
+                (*(element.first))->setPosition(xpos,prevRowPtr->first);
+                prevRowPtr->second.push_back(element);
+            }
+            it->second.clear();
+        }
+    }   
+
+    // create a vector of squares
+    // first get the position randomly and also get the number of squares to be inserted randomly
+    static std::random_device randomDev;
+    static std::mt19937 randomGenerator;
+    static std::uniform_int_distribution<int> uniformDistribution(1,19);
+    std::vector<unsigned int> squareIndexes;
+
+    auto numberOfSquares = uniformDistribution(randomGenerator);
+    uniformDistribution.param(std::uniform_int_distribution<int>::param_type{0, 19});
+
+    // dont insert the squares at same index otherwise they will overlap and wrong count of squares in every row
+    while(squareIndexes.size() != numberOfSquares)
+    {
+        auto idx = uniformDistribution(randomGenerator);
+        if(std::find(squareIndexes.begin(), squareIndexes.end(), idx) == squareIndexes.end())
+        {
+            // idx not found then add
+            squareIndexes.push_back(idx);
+        }
+    }
+
+    std::vector<std::pair<sf::RectangleShape **, IShape *>> newRowAtBottom;
+
+    for(unsigned int idx : squareIndexes)
+    {        
+        auto* s = shapeGen.getSingleSquareShape(idx,std::prev(individualComponentContainer.end())->first);
+        for(auto& element : s->getShapeContianer())
+        {
+            newRowAtBottom.push_back(std::make_pair(element,s));
+        }
+    }
+    // added row at the bottom
+    std::prev(individualComponentContainer.end())->second.clear();
+    for(auto& element : newRowAtBottom)
+    {
+        std::prev(individualComponentContainer.end())->second.push_back(element);
+    }
 }
 
 void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
@@ -168,7 +241,6 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
     float minx = static_cast<int>((*(lastShape->getShapeContianer()[0]))->getPosition().x);
     float maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
-    int countRows = 3;
     std::vector<unsigned int> removeFromRows;
 
     for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
@@ -567,19 +639,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
 {
     if (isGameOver())
     {
-        if (minHighScore == std::numeric_limits<unsigned int>::max() &&
-            maxHighScore == std::numeric_limits<unsigned int>::min() && scoreValue > 0)
-        {
-            if (highScoreUsername.size() == 0)
-            {
-                displayEnterUsernameScreen = true;
-            }
-            minHighScore = scoreValue;
-            currentscore = scoreValue;
-            highScoreAchieved = true;
-            cleanDisplayContainer();
-        }
-        else if (scoreValue > minHighScore)
+        if (scoreValue > 0 && scoreValue > MetaFileHandler::getMinHigScore())
         {
             if (highScoreUsername.size() == 0)
             {
@@ -676,15 +736,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
             {
                 displayEnterUsernameScreen = false;
                 highScoreAchieved = false;
-                savedHighScoreData.push_back(std::make_pair(currentscore, highScoreUsername));
-
-                if (savedHighScoreData.size() > NO_SAVED_HIGHSCORE_USERNAMES)
-                {
-                    std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
-                                [](const auto &a, const auto &b) { return a.first > b.first; });
-
-                    savedHighScoreData.erase(std::prev(savedHighScoreData.end()));
-                }
+                MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
             }
         }
 
@@ -693,34 +745,17 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
             isGameOverState = false;
             highScoreDisplayData.clear();
             cleanDisplayContainer();
-            if (savedHighScoreData.size() > 0)
-            {
-
-                if (highScoreUsername.size() > 0)
-                {
-                    for (auto it = savedHighScoreData.begin(); it != savedHighScoreData.end(); it++)
-                    {
-                        if (it->second == highScoreUsername && currentscore > it->first)
-                        {
-                            it->first = currentscore;
-                            break;
-                        }
-                    }
-                }
-
-                prepareHighscoreDisplaydata();
-            }
+            MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+            highScoreDisplayData = MetaFileHandler::getHighScoreDisplayString();
             generateAndDrawShape(displayWindow);
             highScoreAchieved = false;
-
 
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         {
             cleanDisplayContainer();
-            saveHighScoreInFile();
+            MetaFileHandler::saveMetaDataFileAndClose();
             displayWindow.close();
-            metadataFileHandle.close();
         }
 
         if (displayEnterUsernameScreen)
@@ -845,7 +880,12 @@ void DisplayContainer::setParamtersForCurrentStage()
     {
         // TODO: in the last stage, the whole structre will move upwards at regular interval, maybe 1 min
         // for this add a row at the bottom with random x values
-        // or offer one more shape or power to the user
+        // or offer one more shape or power to the user 
+        insertRowsAtbottom = true;
+    }
+    else
+    {
+        // game complete message and show score, then close
     }
 }
 
@@ -900,99 +940,7 @@ void DisplayContainer::cleanDisplayContainer()
     }
 }
 
-void DisplayContainer::prepeareMeatadataFile()
-{
-    metadataFile =
-        std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH)) + std::string(MEATA_DATA_FILE_NAME);
-    bool fileexist = std::filesystem::exists(metadataFile);
-    if (fileexist)
-    {
-        metadataFileHandle.open(metadataFile, std::ios::in | std::ios::binary);
-        if (metadataFileHandle.is_open())
-        {
-            // Read username until comma
-            std::string username;
-            uint8_t highscorebuffer[4];
-            char ch;
-            while (!metadataFileHandle.eof())
-            {
-                metadataFileHandle.read(&ch, sizeof(char));
-                if (ch == ',')
-                {
-                    uint8_t highscorebuffer[4];
-                    uint32_t tempHighScore = 0;
-                    metadataFileHandle.read((char *)(&highscorebuffer[0]), sizeof(highscorebuffer));
-
-                    for (unsigned int i = 0; i < 4; i++)
-                    {
-                        tempHighScore |= (highscorebuffer[i] << (i * 8));
-                    }
-                    savedHighScoreData.push_back(std::make_pair(tempHighScore, username));
-
-                    minHighScore = std::min(tempHighScore, minHighScore);
-                    maxHighScore = std::max(tempHighScore, maxHighScore);
-
-                    std::cout << "read from file:" << username << tempHighScore << std::endl;
-                    username.clear();
-                }
-                else if (ch == ';')
-                {
-                    continue;
-                }
-                else
-                {
-                    username += ch;
-                }
-            }
-        }
-
-        prepareHighscoreDisplaydata();
-
-        metadataFileHandle.close();
-        metadataFileHandle.open(metadataFile, std::ios::out | std::ios::binary);
-    }
-    else
-    {
-        auto dirPath = std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH));
-        if (mkdir(dirPath.c_str(), 0755) != 0 && errno != EEXIST) {
-            std::cerr << "Failed to create directory: " << dirPath << " - " << strerror(errno) << std::endl;
-        }
-
-        metadataFileHandle.open(metadataFile, std::ios::out | std::ios::binary);
-        if (metadataFileHandle.is_open())
-            std::cout << "file is created and opened" << std::endl;
-    }
-}
-
-void DisplayContainer::saveHighScoreInFile()
-{
-    char comma = ',';
-    char semicolon = ';';
-
-    for (auto &[score, name] : savedHighScoreData)
-    {
-        std::cout << "writing to file:" << score << name << std::endl;
-        metadataFileHandle.write(name.c_str(), name.size());
-        metadataFileHandle.write(&comma, sizeof(comma));
-        metadataFileHandle.write((char *)(&score), 4);
-        metadataFileHandle.write(&semicolon, sizeof(semicolon));
-    }
-}
-
-
 void DisplayContainer::prepareHighscoreDisplaydata()
 {
-    if (savedHighScoreData.size() > 0)
-    {
-        // displaying in descending order
-        std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
-                    [](const auto &a, const auto &b) { return a.first > b.first; });
-        for (auto &[score, username] : savedHighScoreData)
-        {
-            highScoreDisplayData += username;
-            highScoreDisplayData += ":";
-            highScoreDisplayData += std::to_string(score);
-            highScoreDisplayData += "\n";
-        }
-    }
+    highScoreDisplayData = MetaFileHandler::getHighScoreDisplayString();
 }

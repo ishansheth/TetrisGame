@@ -10,6 +10,7 @@ cc_binary(
             "src/ShapeGenerator.cpp",
             "src/StageManager.cpp",
             "src/ParticleSystem.cpp",
+            "src/MetaFileHandler.cpp",
             "include/StageManager.h",
             "include/Util.h",
             "include/ParticleSystem.h",
@@ -23,7 +24,9 @@ cc_binary(
             "include/StShape.h",
             "include/IShape.h",
             "include/BombShape.h",
+            "include/SingleSquareShape.h",
             "include/ShapeGenerator.h",
+            "include/MetaFileHandler.h",
             "include/TShape.h"],
     visibility = ["//visibility:public"],
     linkopts = [

@@ -32,12 +32,6 @@ class BombShape : public BaseShape
         shapeContainer.push_back(&rectangle5);
     }
 
-    virtual IShape *clone(DisplayContainer *displayManager)
-    {
-        BombShape *clonedObj = new BombShape(displayManager);
-        return clonedObj;
-    }
-
     virtual bool isBomb() override
     {
         return true;

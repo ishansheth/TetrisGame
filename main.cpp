@@ -8,9 +8,27 @@
 #include "FontContainer.h"
 #include "StageManager.h"
 #include <vector>
+#include "MetaFileHandler.h"
 
-int main () {
+#include <csignal>
 
+// Signal handler function
+void handleSignal(int signal) 
+{
+    MetaFileHandler::saveMetaDataFileAndClose();
+    exit(signal);
+}
+
+// Call this function at the start of main() or before your game loop
+void setupSignalHandlers() 
+{
+    std::signal(SIGINT, handleSignal);  // Ctrl+C
+    std::signal(SIGTERM, handleSignal); // kill command
+}
+
+int main () 
+{
+    setupSignalHandlers();
     sf::RenderWindow displayWindow (sf::VideoMode (WINDOW_WIDTH, WINDOW_HEIGHT), "Tetris");
 
     FontContainer fontContainer;
@@ -31,7 +49,7 @@ int main () {
             if (event.type == sf::Event::Closed)
             {
                 displayContainer.cleanDisplayContainer();
-                displayContainer.saveHighScoreInFile();
+                MetaFileHandler::saveMetaDataFileAndClose();
                 displayWindow.close ();
             }
         }

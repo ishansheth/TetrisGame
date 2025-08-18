@@ -14,7 +14,6 @@ class IShape
     virtual bool getMoveStatus() = 0;
     virtual bool isShapeBroken() = 0;
     virtual void setBroken() = 0;
-    virtual IShape *clone(DisplayContainer *displayManager) = 0;
     virtual void setposition(sf::Vector2f location) = 0;
     virtual bool isBomb() = 0;
     virtual ~IShape() = default;

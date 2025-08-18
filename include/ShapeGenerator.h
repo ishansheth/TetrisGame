@@ -29,4 +29,6 @@ class ShapeGenerator
     // sets the allowed shapes to be generated from
     // if you call again with different input container, last one will be replaced
     void setAllowedShapesCount(unsigned int);
+
+    IShape* getSingleSquareShape(unsigned int idx, unsigned int ypos);
 };

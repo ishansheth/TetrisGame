@@ -5,6 +5,7 @@
 #include "SqShape.h"
 #include "StShape.h"
 #include "TShape.h"
+#include "SingleSquareShape.h"
 
 static unsigned int idx = 0;
 
@@ -130,4 +131,13 @@ void ShapeGenerator::generateShapes()
 void ShapeGenerator::setAllowedShapesCount(unsigned int cnt)
 {
     uniformDistribution.param(std::uniform_int_distribution<std::mt19937::result_type>::param_type{1, cnt});
+}
+
+
+IShape* ShapeGenerator::getSingleSquareShape(unsigned int idx, unsigned int ypos)
+{
+    auto xpos = idx*SQUARE_SIDE_LENGTH_WITH_OUTLINE+SQUARE_OUTLINE_THICKNESS;
+    IShape* shape = new SingleSquare(sf::Color(129, 133, 137));
+    shape->setposition(sf::Vector2f{xpos,ypos});
+    return shape;
 }

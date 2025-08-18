@@ -31,7 +31,7 @@ static constexpr unsigned int LAST_ROW_Y = DRAW_WINDOW_HEIGHT - SQUARE_SIDE_LENG
 static constexpr unsigned int NUMBER_OF_STAGE_IN_GAME = 3;
 
 static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {4, 5, 6};
-static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.2f, 0.5f, 0.7f};
+static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.4f, 0.7f, 1.f};
 
 ///////////////////////////////////////////////////// Font related const
 ///////////////////////////////////////////////////
@@ -54,5 +54,5 @@ static constexpr unsigned int NO_SAVED_HIGHSCORE_USERNAMES = 5;
 static const char *BLIP_SOUND_FILE_NAME = "hitHurt.wav";
 static const char *EXPLOSION_SOUND_FILE_NAME = "explosion.wav";
 static const char *BOMB_EXPLOSION_SOUND_FILE_NAME = "bomb_explosion.wav";
-static const char* MEATA_DATA_FILE_NAME = "tetrismetadata.bin";
+static const char* META_DATA_FILE_NAME = "tetrismetadata.bin";
 
