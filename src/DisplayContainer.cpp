@@ -223,7 +223,7 @@ void DisplayContainer::insertRowAtBottom()
     for(unsigned int idx : squareIndexes)
     {        
         auto* s = shapeGen.getSingleSquareShape(idx,std::prev(individualComponentContainer.end())->first);
-        for(auto& element : s->getShapeContianer())
+        for(auto& element : s->getShapeContainer())
         {
             newRowAtBottom.push_back(std::make_pair(element,s));
         }
@@ -238,7 +238,7 @@ void DisplayContainer::insertRowAtBottom()
 
 void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 {
-    float minx = static_cast<int>((*(lastShape->getShapeContianer()[0]))->getPosition().x);
+    float minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x);
     float maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
     std::vector<unsigned int> removeFromRows;
@@ -255,7 +255,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
             }
         }
 
-        if (removeFromRows.size() == NO_ROWS_DESROYED_BY_BOMB)
+        if (removeFromRows.size() == NO_ROWS_DESTROYED_BY_BOMB)
             break;
     }
 
@@ -352,7 +352,7 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
         }
         else
         {
-            for (auto &s : lastShape->getShapeContianer())
+            for (auto &s : lastShape->getShapeContainer())
             {
                 auto yVal = getAllowedYVal((*s)->getPosition().y);
                 individualComponentContainer[yVal].push_back(std::make_pair(s, lastShape));
@@ -431,7 +431,7 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
             if (addedWholeShapes.find((e.second)) == addedWholeShapes.end())
             {
                 addedWholeShapes.insert((e.second));
-                for (auto &s : ((e.second))->getShapeContianer())
+                for (auto &s : ((e.second))->getShapeContainer())
                 {
                     auto xval = (*(s))->getPosition().x;
                     auto yval = getAllowedYVal((*(s))->getPosition().y);
@@ -495,7 +495,7 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
                 {
                     addedWholeShapes.insert(shapeInterface);
 
-                    auto squares = shapeInterface->getShapeContianer();
+                    auto squares = shapeInterface->getShapeContainer();
                     for (auto &s : squares)
                     {
                         const auto yval = getAllowedYVal((*s)->getPosition().y);
@@ -643,7 +643,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
     }
     else if (isGameOver())
     {
-        if (scoreValue > 0 && scoreValue > MetaFileHandler::getMinHigScore())
+        if (scoreValue > 0 && scoreValue > MetaFileHandler::getMinHighScore())
         {
             if (highScoreUsername.size() == 0)
             {

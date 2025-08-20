@@ -27,7 +27,7 @@ struct SqShape : public BaseShape
         return false;
     }
 
-    virtual void setposition(sf::Vector2f location) override
+    virtual void setPosition(sf::Vector2f location) override
     {
         // shapecenter is at 1st rectangle upper left corner
         shapeCenter = location;

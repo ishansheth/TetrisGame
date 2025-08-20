@@ -20,42 +20,42 @@ IShape *ShapeGenerator::getNextShape(sf::Vector2f position, DisplayContainer *dC
     {
         // s shape
         SShape *a = new SShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 2)
     {
         // L shape
         LShape *a = new LShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 3)
     {
         // | shape
         StShape *a = new StShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 4)
     {
         // o shape
         SqShape *a = new SqShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 5)
     {
         // T shape
         TShape *a = new TShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 6)
     {
         // bomb shape
         BombShape *a = new BombShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
 }
@@ -68,42 +68,42 @@ IShape *ShapeGenerator::getShape(sf::Vector2f position, DisplayContainer *dCont)
     {
         // s shape
         SShape *a = new SShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 2)
     {
         // L shape
         LShape *a = new LShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 3)
     {
         // | shape
         StShape *a = new StShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 4)
     {
         // o shape
         SqShape *a = new SqShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 5)
     {
         // T shape
         TShape *a = new TShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
     else if (shapeNumber == 6)
     {
         // bomb shape
         BombShape *a = new BombShape(dCont);
-        a->setposition(position);
+        a->setPosition(position);
         return a;
     }
 }
@@ -138,6 +138,6 @@ IShape* ShapeGenerator::getSingleSquareShape(unsigned int idx, unsigned int ypos
 {
     auto xpos = idx*SQUARE_SIDE_LENGTH_WITH_OUTLINE+SQUARE_OUTLINE_THICKNESS;
     IShape* shape = new SingleSquare(sf::Color(129, 133, 137));
-    shape->setposition(sf::Vector2f{xpos,ypos});
+    shape->setPosition(sf::Vector2f{xpos,ypos});
     return shape;
 }

@@ -20,7 +20,7 @@ class MetaFileHandler
     MetaFileHandler()
     {}
 
-    static unsigned int getMinHigScore();
+    static unsigned int getMinHighScore();
 
     static void updateNewHighScore(unsigned int score, const std::string& username);
 

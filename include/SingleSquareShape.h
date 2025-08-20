@@ -25,17 +25,23 @@ class SingleSquare : public IShape
         shapeContainer.push_back(&rectangle);
     }
 
+    ~SingleSquare()
+    {
+        delete rectangle;
+        shapeContainer.clear();
+    }
+
     virtual bool isBomb() override
     {
         return false;
     }    
 
-    virtual void setposition(sf::Vector2f location) override
+    virtual void setPosition(sf::Vector2f location) override
     {
         rectangle->setPosition(location);
     }
 
-    std::vector<sf::RectangleShape **> getShapeContianer() override
+    std::vector<sf::RectangleShape **> getShapeContainer() override
     {
         return shapeContainer;
     }

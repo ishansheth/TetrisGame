@@ -9,7 +9,6 @@ static constexpr unsigned int SQUARE_SIDE_LENGTH = 20;
 static constexpr unsigned int BOMB_SQUARE_SIDE_LENGTH = 40;
 
 static constexpr unsigned int SQUARE_OUTLINE_THICKNESS = 2;
-static constexpr unsigned int HALF_SQUARE_LENGTH = 13;
 
 static constexpr unsigned int SQUARE_SIDE_LENGTH_WITH_OUTLINE = (SQUARE_SIDE_LENGTH + (2 * SQUARE_OUTLINE_THICKNESS));
 static constexpr unsigned int NUMBER_OF_SQUARES_IN_ROW = 20;
@@ -46,7 +45,7 @@ static constexpr unsigned int SCORE_PER_ROW = 10;
 
 static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {50, 100, 150};
 
-static constexpr unsigned int NO_ROWS_DESROYED_BY_BOMB = 3;
+static constexpr unsigned int NO_ROWS_DESTROYED_BY_BOMB = 3;
 
 static constexpr unsigned int NO_SAVED_HIGHSCORE_USERNAMES = 5; 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

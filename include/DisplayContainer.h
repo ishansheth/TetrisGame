@@ -16,20 +16,6 @@
 static const sf::Vertex partitionLine[] = {sf::Vertex(sf::Vector2f(DRAW_WINDOW_WIDTH, 1.f)),
                                            sf::Vertex(sf::Vector2f(DRAW_WINDOW_WIDTH, WINDOW_HEIGHT - 0.1f))};
 
-static std::vector<std::vector<sf::Vertex>> getGridLines()
-{
-    static std::vector<std::vector<sf::Vertex>> gridLines;
-    for (std::size_t i = 1; i < NUMBER_OF_SQUARES_IN_ROW; i++)
-    {
-        std::vector<sf::Vertex> singleLine{
-            sf::Vertex(sf::Vector2f((SQUARE_SIDE_LENGTH_WITH_OUTLINE * i), 1.f), sf::Color(255, 0, 0, 100)),
-            sf::Vertex(sf::Vector2f((SQUARE_SIDE_LENGTH_WITH_OUTLINE * i), WINDOW_HEIGHT - 0.1f),
-                       sf::Color(255, 0, 0, 100))};
-
-        gridLines.push_back(singleLine);
-    }
-}
-
 static const sf::Vertex borderLine1[] = {sf::Vertex(sf::Vector2f(1.f, 1.f)),
                                          sf::Vertex(sf::Vector2f(WINDOW_WIDTH - 0.1f, 1.f))};
 
@@ -113,8 +99,6 @@ class DisplayContainer
     void handleBombDrop(sf::RenderWindow &displayWindow);
 
     void drawDisplayContainer(sf::RenderWindow &displayWindow);
-
-    void prepeareMeatadataFile();
 
     void prepareHighscoreDisplaydata();
 

@@ -9,17 +9,10 @@ class BombShape : public BaseShape
     // Bomb shape
 
     sf::RectangleShape *rectangle5;
-    sf::Texture shapeTexture;
-
-    DisplayContainer *dContainer;
-    std::vector<sf::RectangleShape **> shapeContainer;
-
-    sf::Vector2f shapeVelocity;
     bool isMoving;
 
   public:
     BombShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(100, 250, 50)),
-        dContainer(displayManager)    ,
         rectangle5(new sf::RectangleShape()) 
     {
         shapeVelocity = sf::Vector2f(SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
@@ -37,7 +30,7 @@ class BombShape : public BaseShape
         return true;
     }
 
-    std::vector<sf::RectangleShape **> getShapeContianer() override
+    std::vector<sf::RectangleShape **> getShapeContainer() override
     {
         return shapeContainer;
     }
@@ -47,8 +40,7 @@ class BombShape : public BaseShape
         delete rectangle5;
     }
 
-
-    virtual void setposition(sf::Vector2f location) override
+    virtual void setPosition(sf::Vector2f location) override
     {
         rectangle5->setPosition(location);
     }

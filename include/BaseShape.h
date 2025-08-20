@@ -7,6 +7,7 @@
 
 class BaseShape : public IShape
 {
+  protected:
     sf::Texture shapeTexture;
     DisplayContainer *dContainer;
     std::vector<sf::RectangleShape **> shapeContainer;
@@ -18,7 +19,6 @@ class BaseShape : public IShape
     bool isBroken;
     sf::Color sqaureColor;
 
-  protected:
     sf::RectangleShape *rectangle1;
     sf::RectangleShape *rectangle2;
     sf::RectangleShape *rectangle3;
@@ -81,7 +81,7 @@ class BaseShape : public IShape
         shapeContainer.clear();
     }
 
-    std::vector<sf::RectangleShape **> getShapeContianer() override
+    std::vector<sf::RectangleShape **> getShapeContainer() override
     {
         return shapeContainer;
     }

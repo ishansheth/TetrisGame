@@ -22,7 +22,7 @@ struct StShape : public BaseShape
         return false;
     }
 
-    virtual void setposition(sf::Vector2f location) override
+    virtual void setPosition(sf::Vector2f location) override
     {
         auto location1 = location;
         location1.x = location1.x + SQUARE_OUTLINE_THICKNESS;

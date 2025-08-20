@@ -6,19 +6,13 @@ std::vector<std::pair<uint32_t,std::string>> MetaFileHandler::savedHighScoreData
 unsigned int MetaFileHandler::minHighScore = 0;
 
 
-unsigned int MetaFileHandler::getMinHigScore()
+unsigned int MetaFileHandler::getMinHighScore()
 {
     return minHighScore;
 }
 
 void MetaFileHandler::updateNewHighScore(unsigned int score, const std::string& username)
 {
-    if(minHighScore == std::numeric_limits<unsigned int>::max())
-    {
-        minHighScore = score;
-    }
-
-
     if(score > minHighScore)
     {
         bool usenameExist = false;
@@ -122,6 +116,11 @@ void MetaFileHandler::saveMetaDataFileAndClose()
 {
     char comma = ',';
     char semicolon = ';';
+
+    if (!metadataFileHandle.is_open())
+    {
+        return;
+    }
 
     for (auto &[score, name] : savedHighScoreData)
     {
