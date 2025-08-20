@@ -88,7 +88,8 @@ class DisplayContainer
     bool displayEnterUsernameScreen;
     bool highScoreAchieved;
     bool insertRowsAtbottom;
-
+    bool gameComplete;
+    
     std::string highScoreUsername;
     uint32_t currentscore;
     std::string highScoreDisplayData;
@@ -118,6 +119,8 @@ class DisplayContainer
     void prepareHighscoreDisplaydata();
 
     void insertRowAtBottom();
+
+    void showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow);
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);

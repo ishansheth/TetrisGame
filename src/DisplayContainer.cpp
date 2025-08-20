@@ -12,7 +12,7 @@ float SHAPE_DOWN_FALL_SPEED_Y = 0.1;
 DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
     : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
       isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000),
-      displayEnterUsernameScreen(false),highScoreAchieved(false), insertRowsAtbottom(false),
+      displayEnterUsernameScreen(false),highScoreAchieved(false), insertRowsAtbottom(false),gameComplete(false),
       oneMinTime(sf::seconds(60))
 {
     auto yVal = LAST_ROW_Y;
@@ -637,7 +637,11 @@ void DisplayContainer::checkFullRows(sf::RenderWindow &displayWindow)
 
 void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
 {
-    if (isGameOver())
+    if(gameComplete)
+    {
+        showGameCompleteScreenAndExit(displayWindow); 
+    }
+    else if (isGameOver())
     {
         if (scoreValue > 0 && scoreValue > MetaFileHandler::getMinHigScore())
         {
@@ -835,7 +839,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
         displayWindow.draw(highscore_partition_line1, 2, sf::Lines);
         displayWindow.draw(highscore_partition_line2, 2, sf::Lines);
     }
-
+    
     displayWindow.draw(borderLine1, 2, sf::Lines);
     displayWindow.draw(borderLine2, 2, sf::Lines);
     displayWindow.draw(borderLine3, 2, sf::Lines);
@@ -843,6 +847,27 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
 
     displayWindow.display();
     displayWindow.clear(sf::Color::Black);
+}
+
+void DisplayContainer::showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow)
+{
+    displayWindow.clear(sf::Color::Black);
+    // draw border line
+    displayWindow.draw(borderLine1, 2, sf::Lines);
+    displayWindow.draw(borderLine2, 2, sf::Lines);
+    displayWindow.draw(borderLine3, 2, sf::Lines);
+    displayWindow.draw(borderLine4, 2, sf::Lines);
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_COMPLETE_MESSAGE);
+    displayWindow.display();
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    displayWindow.clear(sf::Color::Black);
+    MetaFileHandler::saveMetaDataFileAndClose();
+    cleanDisplayContainer();
+
+    displayWindow.close ();   
+    exit(1);
 }
 
 void DisplayContainer::moveShapes()
@@ -870,7 +895,9 @@ void DisplayContainer::setParamtersForCurrentStage()
     }
     else if (currentStageNumber == 2)
     {
-        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
+        gameComplete = true;
+
+        // shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
     }
     else if (currentStageNumber == 3)
     {
@@ -886,8 +913,10 @@ void DisplayContainer::setParamtersForCurrentStage()
     else
     {
         // game complete message and show score, then close
+        gameComplete = true;
     }
 }
+
 
 void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow)
 {
