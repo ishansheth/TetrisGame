@@ -676,72 +676,43 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
                 }
             }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
+            for(unsigned int key = sf::Keyboard::Num0; key <= sf::Keyboard::Num9; key++)
+            {
+                if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
+                {
+                    std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                    if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
+                    {
+                        highScoreUsername += std::to_string(key - sf::Keyboard::Num0);    
+                        break;
+                    }                        
+                }
+            }
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
             {
                 std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
-                    highScoreUsername += "0";
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
+                {
+                    if(highScoreUsername.size() > 0)
+                    {
+                        highScoreUsername.pop_back();   
+                    }
+
+                }
+
             }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
+            else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
             {
                 std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-                    highScoreUsername += "1";
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+                {
+                    displayEnterUsernameScreen = false;
+                    highScoreAchieved = false;
+                    MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+                }
             }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-                    highScoreUsername += "2";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-                    highScoreUsername += "3";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
-                    highScoreUsername += "4";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
-                    highScoreUsername += "5";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num6))
-                    highScoreUsername += "6";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num7))
-                    highScoreUsername += "7";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
-                    highScoreUsername += "8";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
-            {
-                std::this_thread::sleep_for (std::chrono::milliseconds (90));
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
-                    highScoreUsername += "9";
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
-            {
-                displayEnterUsernameScreen = false;
-                highScoreAchieved = false;
-                MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
-            }
+
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::F10))
@@ -895,9 +866,7 @@ void DisplayContainer::setParamtersForCurrentStage()
     }
     else if (currentStageNumber == 2)
     {
-        gameComplete = true;
-
-        // shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
     }
     else if (currentStageNumber == 3)
     {
