@@ -1,5 +1,7 @@
 #include "ParticleSystem.h"
 #include <random>
+#include "Util.h"
+#include "GameConstants.h"
 
 void ParticleSystem::resetParticle(const unsigned int idx)
 {
@@ -13,9 +15,9 @@ void ParticleSystem::resetParticle(const unsigned int idx)
     vertices[idx].position = particles[idx].emitterPos;
 }
 
-void ParticleSystem::draw(sf::RenderTarget &target, sf::RenderStates state) const
+void ParticleSystem::draw(sf::RenderTarget &displayWindow, sf::RenderStates state) const
 {
-    target.draw(vertices, state);
+    displayWindow.draw(vertices, state);
 }
 
 void ParticleSystem::setEmitter(const sf::Vector2f &startPos)
@@ -35,7 +37,11 @@ void ParticleSystem::update()
     {
         Particle &p = particles[i];
 
-        vertices[i].position += p.velocity;
-        vertices[i].color = sf::Color(255, 0, 0);
+        auto temp = vertices[i].position + p.velocity;
+        if(temp.x >= 0 && temp.x <= DRAW_WINDOW_WIDTH && temp.y >= 0 && temp.y <= DRAW_WINDOW_HEIGHT)
+        {
+            vertices[i].position = temp;
+        }
+        vertices[i].color = particlesColor;
     }
 }

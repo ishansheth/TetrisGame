@@ -10,7 +10,7 @@
 static unsigned int idx = 0;
 
 static constexpr unsigned int arr_len = 14;
-static constexpr unsigned int testShapes[arr_len] = {2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+static constexpr unsigned int testShapes[arr_len] = {2, 2, 2, 2, 2, 6, 6, 2, 2, 2, 2, 2, 2, 2};
 
 IShape *ShapeGenerator::getNextShape(sf::Vector2f position, DisplayContainer *dCont)
 {

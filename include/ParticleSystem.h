@@ -18,14 +18,16 @@ class ParticleSystem : public sf::Drawable, public sf::Transformable
     sf::VertexArray vertices;
     sf::Time lifetimeTimer;
     std::vector<Particle> particles;
-
+    sf::Color particlesColor;
     void resetParticle(const unsigned int idx);
 
   public:
-    ParticleSystem(unsigned int count)
-        : vertices(sf::PrimitiveType::Points, count), lifetimeTimer(sf::seconds(3)), particles(count)
-    {
-    }
+    ParticleSystem(unsigned int count, sf::Color color)
+        : vertices(sf::PrimitiveType::Points, count), 
+        lifetimeTimer(sf::seconds(3)), 
+        particles(count), 
+        particlesColor(color)
+    {}
 
     void draw(sf::RenderTarget &target, sf::RenderStates state) const override;
 

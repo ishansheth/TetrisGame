@@ -12,11 +12,12 @@
 
 #include <csignal>
 
+static volatile sig_atomic_t g_signalReceived = 0;
+
 // Signal handler function
 void handleSignal(int signal) 
 {
-    MetaFileHandler::saveMetaDataFileAndClose();
-    exit(signal);
+    g_signalReceived = signal; // async-signal-safe    
 }
 
 // Call this function at the start of main() or before your game loop
@@ -51,6 +52,15 @@ int main ()
                 displayContainer.handleWindowCloseEvent();
             }
         }
+
+        if (g_signalReceived) 
+        {
+            displayContainer.handleWindowCloseEvent();
+            MetaFileHandler::saveMetaDataFileAndClose();
+            displayWindow.close();
+            break;
+        }
+
         if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));
             if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space) && !gamePause) {                

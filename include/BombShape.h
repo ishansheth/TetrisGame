@@ -70,7 +70,7 @@ class BombShape : public BaseShape
 
             const auto p5 = rectangle5->getPosition() + shapeVelocity;
 
-            if (isWithinDrawWindow(p5) && !dContainer->isIntersecting(p5, this))
+            if (isWithinDrawWindow(p5, BOMB_SQUARE_SIDE_LENGTH) && !dContainer->isIntersecting(p5, this))
             {
                 rectangle5->move(shapeVelocity);
                 // shift the center
@@ -85,7 +85,7 @@ class BombShape : public BaseShape
 
             const auto p5 = rectangle5->getPosition() + shapeVelocity;
 
-            if (isWithinDrawWindow(p5) && !dContainer->isIntersecting(p5, this))
+            if (isWithinDrawWindow(p5, BOMB_SQUARE_SIDE_LENGTH) && !dContainer->isIntersecting(p5, this))
             {
                 rectangle5->move(shapeVelocity);
                 // shift the center
@@ -114,7 +114,7 @@ class BombShape : public BaseShape
         {
             auto p5 = rectangle5->getPosition() + shapeVelocity;
 
-            if (isWithinDrawWindow(p5) && !dContainer->isIntersecting(p5, this))
+            if (isWithinDrawWindow(p5, BOMB_SQUARE_SIDE_LENGTH) && !dContainer->isIntersecting(p5, this))
             {
                 rectangle5->move(shapeVelocity);
                 // shift the center

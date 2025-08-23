@@ -11,7 +11,7 @@ float SHAPE_DOWN_FALL_SPEED_Y = 0.1;
 
 DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
     : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
-      isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000),
+      isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000, sf::Color(255, 255, 0)),
       displayEnterUsernameScreen(false),highScoreAchieved(false), insertRowsAtbottom(false),gameComplete(false),
       windowClosePressed(false),oneMinTime(sf::seconds(60))
 {
@@ -49,7 +49,7 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
 
     for (unsigned int i = 0; i < NUMBER_OF_SQUARES_IN_ROW; i++)
     {
-        rowCollapseParticleSystems.emplace_back(1000);
+        rowCollapseParticleSystems.emplace_back(1000, sf::Color(255, 0, 0));
     }
 
     MetaFileHandler::readMetaDataFile();

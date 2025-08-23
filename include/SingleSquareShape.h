@@ -7,18 +7,18 @@ class SingleSquare : public IShape
 {
     sf::RectangleShape *rectangle;
     sf::Texture shapeTexture;
-    sf::Color sqaureColor;
+    sf::Color squareColor;
     const sf::Color outlineColor = sf::Color(255, 255, 255);
     std::vector<sf::RectangleShape **> shapeContainer;
 
     public:
-    SingleSquare(sf::Color color): rectangle(new sf::RectangleShape()), sqaureColor(color)
+    SingleSquare(sf::Color color): rectangle(new sf::RectangleShape()), squareColor(color)
     {
         shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(TEXTURE_FILE_PATH)),
                                   sf::IntRect({0, 0}, {32, 32}));
 
         rectangle->setSize(sf::Vector2f(SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));
-        rectangle->setFillColor(sqaureColor);
+        rectangle->setFillColor(squareColor);
         rectangle->setOutlineColor(outlineColor);
         rectangle->setOutlineThickness(SQUARE_OUTLINE_THICKNESS);
         rectangle->setTexture(&shapeTexture);
