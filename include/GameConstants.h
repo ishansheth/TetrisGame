@@ -43,7 +43,7 @@ static constexpr unsigned int SCORE_PER_ROW = 10;
 
 // static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {300, 900, 2700};
 
-static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {50, 100, 150};
+static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {100, 500, 1500};
 
 static constexpr unsigned int NO_ROWS_DESTROYED_BY_BOMB = 3;
 

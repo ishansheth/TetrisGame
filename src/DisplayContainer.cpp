@@ -664,6 +664,19 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
             fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER);
         }
 
+        if(windowClosePressed && !displayEnterUsernameScreen && highScoreAchieved)
+        {
+            // window closed with new high score and known username, just show a message string and exit
+            displayWindow.clear();
+            displayWindow.draw(borderLine1, 2, sf::Lines);
+            displayWindow.draw(borderLine2, 2, sf::Lines);
+            displayWindow.draw(borderLine3, 2, sf::Lines);
+            displayWindow.draw(borderLine4, 2, sf::Lines);
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED);
+            displayWindow.display();
+            std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+        }
+
         if (displayEnterUsernameScreen)
         {
             bool shiftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
@@ -739,6 +752,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
             displayWindow.close();
         }
 
+        // Complex if else ladder based on different scenario
         if (displayEnterUsernameScreen)
         {
             fContainerRef.setFontString(GameFontStrings::USERNAME_INPUT_STRING, highScoreUsername);
@@ -748,18 +762,25 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
         }
         else
         {
+            // show the string only if high score was achieved
             if (highScoreAchieved)
             {
                 fContainerRef.drawSingleString(displayWindow, GameFontStrings::HIGHSCORE_ACHIEVED);
             }
 
+            // if the window close was not done and show user instruction
             if(!windowClosePressed)
             {
                 fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER_USER_SELECTION);
             }
             else
             {
-                MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+                // if window was closed: then update the high score in file if the username was not taken from user
+                // if the user entered the username then high score was updated already above
+                if(!displayEnterUsernameScreen)
+                {
+                    MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+                }
                 MetaFileHandler::saveMetaDataFileAndClose();
                 displayWindow.close();
             }
