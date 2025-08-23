@@ -8,26 +8,37 @@
 #include "FontContainer.h"
 #include "StageManager.h"
 #include <vector>
+#include "MetaFileHandler.h"
 
-int main () {
+#include <csignal>
 
+static volatile sig_atomic_t g_signalReceived = 0;
+
+// Signal handler function
+void handleSignal(int signal) 
+{
+    g_signalReceived = signal; // async-signal-safe    
+}
+
+// Call this function at the start of main() or before your game loop
+void setupSignalHandlers() 
+{
+    std::signal(SIGINT, handleSignal);  // Ctrl+C
+    std::signal(SIGTERM, handleSignal); // kill command
+}
+
+int main () 
+{
+    setupSignalHandlers();
     sf::RenderWindow displayWindow (sf::VideoMode (WINDOW_WIDTH, WINDOW_HEIGHT), "Tetris");
 
     FontContainer fontContainer;
-    fontContainer.addFont (
-    GameFontStrings::NEXT_SHAPE_LABEL, FONT_NEXT_SHAPE_X, FONT_NEXT_SHAPE_Y);
-    fontContainer.addFont (GameFontStrings::SCORE_LABEL, FONT_SCORE_X, FONT_SCORE_Y);
-    fontContainer.addFont (GameFontStrings::SCORE_VALUE, FONT_SCORE_VALUE_X, FONT_SCORE_VALUE_Y);
-    fontContainer.addFont (GameFontStrings::GAME_OVER, FONT_GAMEOVER_X, FONT_GAMEOVER_Y);
-    fontContainer.addFont (GameFontStrings::GAME_PAUSED, GAME_PAUSED_X, GAME_PAUSED_Y);
-    fontContainer.addFont (GameFontStrings::STAGE_LABEL, STAGE_LEBEL_X, STAGE_LEBEL_Y);
-    fontContainer.addFont (GameFontStrings::STAGE_VALUE, STAGE_VALUE_X, STAGE_VALUE_Y);
-    fontContainer.addFont (GameFontStrings::STAGE_COMPLETE_MESSAGE, STAGE_COMPLETE_MSG_X, STAGE_COMPLETE_MSG_Y);
-
+    fontContainer.initializeFontContainer();
+    
     ShapeGenerator shapegen;
     DisplayContainer displayContainer (fontContainer, shapegen);
 
-    StageManager sMgr(fontContainer, displayWindow);
+    // StageManager sMgr(fontContainer, displayWindow);
     bool gamePause = false;
 
     displayContainer.showCurrentStageScreen(displayWindow);
@@ -37,8 +48,19 @@ int main () {
 
         while (displayWindow.pollEvent (event)) {
             if (event.type == sf::Event::Closed)
-                displayWindow.close ();
+            {                                
+                displayContainer.handleWindowCloseEvent();
+            }
         }
+
+        if (g_signalReceived) 
+        {
+            displayContainer.handleWindowCloseEvent();
+            MetaFileHandler::saveMetaDataFileAndClose();
+            displayWindow.close();
+            break;
+        }
+
         if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space)) {
             std::this_thread::sleep_for (std::chrono::milliseconds (90));
             if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space) && !gamePause) {                

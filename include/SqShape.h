@@ -1,10 +1,11 @@
 #pragma once
-#include "DisplayContainer.h"
 #include "BaseShape.h"
+#include "DisplayContainer.h"
 #include "Util.h"
 #include <SFML/Graphics.hpp>
 
-struct SqShape : public BaseShape {
+struct SqShape : public BaseShape
+{
     // square shape
     /*
     | 1 | 2 |
@@ -12,18 +13,13 @@ struct SqShape : public BaseShape {
 
     */
 
-    public:
-    SqShape (DisplayContainer* displayManager):
-    BaseShape(displayManager, sf::Color(100, 50, 250))
-    {}
-
-    IShape* clone(DisplayContainer* displayManager) override
+  public:
+    SqShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(100, 50, 250))
     {
-        SqShape* clonedObj = new SqShape(displayManager);
-        return clonedObj;        
     }
 
-    virtual ~SqShape () {
+    virtual ~SqShape()
+    {
     }
 
     virtual bool isBomb() override
@@ -31,32 +27,31 @@ struct SqShape : public BaseShape {
         return false;
     }
 
-    virtual void setposition (sf::Vector2f location) override
+    virtual void setPosition(sf::Vector2f location) override
     {
         // shapecenter is at 1st rectangle upper left corner
-        shapeCenter    = location;
+        shapeCenter = location;
         auto location1 = location;
-        location1.x    = location1.x + SQUARE_OUTLINE_THICKNESS;
-        location1.y    = location1.y + SQUARE_OUTLINE_THICKNESS;
-        rectangle1->setPosition (location1);
+        location1.x = location1.x + SQUARE_OUTLINE_THICKNESS;
+        location1.y = location1.y + SQUARE_OUTLINE_THICKNESS;
+        rectangle1->setPosition(location1);
 
         location1 = location;
         location1.x = location1.x + SQUARE_SIDE_LENGTH + 3 * SQUARE_OUTLINE_THICKNESS;
         location1.y = location1.y + SQUARE_OUTLINE_THICKNESS;
-        rectangle2->setPosition (location1);
+        rectangle2->setPosition(location1);
 
-        location1   = location;
+        location1 = location;
         location1.x = location1.x + SQUARE_OUTLINE_THICKNESS;
         location1.y = location1.y + SQUARE_SIDE_LENGTH + 3 * SQUARE_OUTLINE_THICKNESS;
-        rectangle3->setPosition (location1);
+        rectangle3->setPosition(location1);
 
         location1 = location;
         location1.x = location1.x + SQUARE_SIDE_LENGTH + 3 * SQUARE_OUTLINE_THICKNESS;
         location1.y = location1.y + SQUARE_SIDE_LENGTH + 3 * SQUARE_OUTLINE_THICKNESS;
-        rectangle4->setPosition (location1);
+        rectangle4->setPosition(location1);
 
         shapeCenter.y = location1.y;
-        shapeCenter.x = location1.x;        
+        shapeCenter.x = location1.x;
     }
-
 };

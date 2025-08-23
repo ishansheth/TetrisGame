@@ -9,6 +9,8 @@ cc_binary(
             "src/DisplayContainer.cpp",
             "src/ShapeGenerator.cpp",
             "src/StageManager.cpp",
+            "src/ParticleSystem.cpp",
+            "src/MetaFileHandler.cpp",
             "include/StageManager.h",
             "include/Util.h",
             "include/ParticleSystem.h",
@@ -22,7 +24,9 @@ cc_binary(
             "include/StShape.h",
             "include/IShape.h",
             "include/BombShape.h",
+            "include/SingleSquareShape.h",
             "include/ShapeGenerator.h",
+            "include/MetaFileHandler.h",
             "include/TShape.h"],
     visibility = ["//visibility:public"],
     linkopts = [
@@ -35,7 +39,9 @@ cc_binary(
     defines = [
         'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
         'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
+        'BOMB_IMAGE="/TetrisGame/resources/textures/bomb_texture.png"',
         'SOUND_FOLDER_PATH="/TetrisGame/resources/sounds/"',
+        'META_DATA_FILE_PATH="/TetrisGame/resources/files/"',
         'WINDOW_WIDTH=700',
         'WINDOW_HEIGHT=600'        
     ],

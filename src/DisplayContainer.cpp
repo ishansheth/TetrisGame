@@ -1,85 +1,97 @@
 #include "DisplayContainer.h"
-#include <iostream>
-#include <thread>
 #include "Util.h"
+#include <filesystem>
+#include <iostream>
+#include <sys/stat.h>
+#include <thread>
+#include <string.h>
+#include "MetaFileHandler.h"
 
-DisplayContainer::DisplayContainer (FontContainer& fCon, ShapeGenerator& shapegenerator)
-: shapeGen(shapegenerator), 
-    lastShape (nullptr), 
-    nextShape (nullptr), 
-    moveStatus (true),
-    scoreValue (0), 
-    isGameOverState (false),
-    isGamePaused(false), 
-    fContainerRef (fCon), 
-    currentStageNumber(1),
-    xCoordinateEmitter(-100)
-    {
+float SHAPE_DOWN_FALL_SPEED_Y = 0.1;
 
+DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator)
+    : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
+      isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000, sf::Color(255, 255, 0)),
+      displayEnterUsernameScreen(false),highScoreAchieved(false), insertRowsAtbottom(false),gameComplete(false),
+      windowClosePressed(false),oneMinTime(sf::seconds(60))
+{
     auto yVal = LAST_ROW_Y;
-    for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--) {
-        individualComponentContainer[yVal] =
-        std::vector<std::pair<sf::RectangleShape**, IShape*>> ();
+    for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
+    {
+        individualComponentContainer[yVal] = std::vector<std::pair<sf::RectangleShape **, IShape *>>();
         rowYCoordinate.push_back(yVal);
         yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
-    if(!shapeSettleSoundBuffer.loadFromFile(std::getenv ("HOME") + 
-    std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + 
-    std::string(BLIP_SOUND_FILE_NAME)))
+    if (!shapeSettleSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
+                                             std::string(BLIP_SOUND_FILE_NAME)))
     {
-        std::cout<<"Could not load blip-131856.wav file"<<std::endl;
+        std::cout << "Could not load blip-131856.wav file" << std::endl;
     }
 
-    if(!rowRemovedExplosionSoundBuffer.loadFromFile(std::getenv ("HOME") + 
-    std::string (TOSTRINGYFY (SOUND_FOLDER_PATH)) + 
-    std::string(EXPLOSION_SOUND_FILE_NAME)))
+    if (!rowRemovedExplosionSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
+                                                     std::string(EXPLOSION_SOUND_FILE_NAME)))
     {
-        std::cout<<"Could not load blip-131856.wav file"<<std::endl;
+        std::cout << "Could not load blip-131856.wav file" << std::endl;
     }
 
+    if (!bombExplosionSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
+                                               std::string(BOMB_EXPLOSION_SOUND_FILE_NAME)))
+    {
+        std::cout << "Could not load bomb_explosion.wav file" << std::endl;
+    }
 
     shapeSettleSound.setBuffer(shapeSettleSoundBuffer);
     rowRemovedExplosionSound.setBuffer(rowRemovedExplosionSoundBuffer);
+    bombExplosionSound.setBuffer(bombExplosionSoundBuffer);
+
     setParamtersForCurrentStage();
-    
-    
-    for(unsigned int i = 0; i < NUMBER_OF_SQUARES_IN_ROW; i++)
+
+    for (unsigned int i = 0; i < NUMBER_OF_SQUARES_IN_ROW; i++)
     {
-        rowCollapseParticleSystems.emplace_back(1000);
+        rowCollapseParticleSystems.emplace_back(1000, sf::Color(255, 0, 0));
     }
 
+    MetaFileHandler::readMetaDataFile();
+    highScoreDisplayData = MetaFileHandler::getHighScoreDisplayString();
 }
 
+bool DisplayContainer::isGameOver()
+{
+    if (isGameOverState)
+        return isGameOverState;
 
-bool DisplayContainer::isGameOver () {
-    return (individualComponentContainer[FIRST_ROW_Y].size () > 0);
+    if (individualComponentContainer[rowYCoordinate.back()].size() > 0)
+    {
+        isGameOverState = true;
+    }
+    return isGameOverState;
 }
 
 // check of falling shape is intersecting with currently displayed shapes
-bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition, IShape* ignoreshape) 
+bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const IShape *ignoreshape)
 {
     // get all the shapes for the container which is currently displayed in window
-    for (auto& s : individualComponentContainer) {
+    for (auto &s : individualComponentContainer)
+    {
         // for incoming shape, iterate over all rectangles
         // check the shape in container
-        
-        for (auto& t2 : s.second) 
+
+        for (auto &t2 : s.second)
         {
-            if(t2.second == ignoreshape)
+            if (t2.second == ignoreshape)
                 continue;
 
             if (
-            //                    bottom >= top
-            shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
-            (*t2.first)->getPosition ().y - SQUARE_OUTLINE_THICKNESS &&
-            //                    top <= bottom
-            shapePosition.y <= (*t2.first)->getPosition ().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
-            //                    left <= right
-            shapePosition.x <= (*t2.first)->getPosition ().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
-            //                    right >= left
-            shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
-            (*t2.first)->getPosition ().x)
+                //                    bottom >= top
+                shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
+                    (*t2.first)->getPosition().y - SQUARE_OUTLINE_THICKNESS &&
+                //                    top <= bottom
+                shapePosition.y <= (*t2.first)->getPosition().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+                //                    left <= right
+                shapePosition.x <= (*t2.first)->getPosition().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+                //                    right >= left
+                shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >= (*t2.first)->getPosition().x)
 
             {
                 return true;
@@ -89,173 +101,303 @@ bool DisplayContainer::isIntersecting (sf::Vector2f shapePosition, IShape* ignor
     return false;
 }
 
-int DisplayContainer::getLowestYVal (int x, int refY) {
-    for (auto it = individualComponentContainer.begin ();
-         it != individualComponentContainer.end (); it++) {
-        if (it->first > refY) 
+int DisplayContainer::getLowestYVal(const unsigned int searchX, const unsigned int refY)
+{
+    auto iteratorPtr = individualComponentContainer.find(refY);
+    for (; iteratorPtr != individualComponentContainer.end(); iteratorPtr++)
+    {
+        auto searchPtr = std::find_if(iteratorPtr->second.begin(), iteratorPtr->second.end(),
+                                      [&searchX](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                          return (abs((*(element.first))->getPosition().x - searchX) < 2);
+                                      });
+        if (searchPtr != iteratorPtr->second.end())
         {
-            bool found = false;
-            for (auto& element : it->second) 
-            {
-                if (abs((*element.first)->getPosition ().x - x) <= 3) 
-                {
-                    it--;
-                    return it->first;
-                }
-            }
+            iteratorPtr--;
+            return iteratorPtr->first;
         }
     }
     return rowYCoordinate.front();
 }
 
-int DisplayContainer::getAllowedYVal(float yCoordinate)
+int DisplayContainer::getAllowedYVal(const float yCoordinate)
 {
     int minIdx = -1;
     int minDiff = 1000;
 
-    for(std::size_t i = 0; i < rowYCoordinate.size(); i++)
+    for (std::size_t i = 0; i < rowYCoordinate.size(); i++)
     {
-        if(abs(rowYCoordinate[i]-yCoordinate) < minDiff)
+        if (abs(rowYCoordinate[i] - yCoordinate) < minDiff)
         {
-            minDiff = abs(rowYCoordinate[i]-yCoordinate);
+            minDiff = abs(rowYCoordinate[i] - yCoordinate);
             minIdx = i;
         }
     }
     return rowYCoordinate[minIdx];
 }
 
-int DisplayContainer::getScore () {
-    return scoreValue;
+void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
+{
+    if (lastShape)
+    {
+        lastShape->handleKey(key);
+    }
 }
 
-void DisplayContainer::handleKey (sf::Keyboard::Key k) {
-    if(lastShape)
-        lastShape->handleKey (k);
-}
-
-void DisplayContainer::generateAndDrawShape (sf::RenderWindow& displayWindow) {
-    if (isGameOverState) {
+void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
+{
+    if (isGameOverState)
+    {
         return;
     }
 
-    if (lastShape == nullptr) {
-        shapeGen.generateShapes ();
-        lastShape = shapeGen.getShape (sf::Vector2f (0, 0), this);
-        nextShape = shapeGen.getNextShape (sf::Vector2f (NEXT_SHAPE_X, NEXT_SHAPE_Y), this);
+    if (lastShape == nullptr)
+    {
+        shapeGen.generateShapes();
+        lastShape = shapeGen.getShape(sf::Vector2f(0, 0), this);
+        nextShape = shapeGen.getNextShape(sf::Vector2f(NEXT_SHAPE_X, NEXT_SHAPE_Y), this);
     }
 
+    if(!windowClosePressed)
+    {
+        lastShape->drawShape(displayWindow);
+        nextShape->drawShape(displayWindow);
+    }
 
-    lastShape->drawShape (displayWindow);
-    nextShape->drawShape (displayWindow);
+    fContainerRef.setFontString(GameFontStrings::HIGH_SCORE_VALUES, highScoreDisplayData);
+    fContainerRef.setFontString(GameFontStrings::SCORE_VALUE, std::to_string(scoreValue));
+    fContainerRef.setFontString(GameFontStrings::STAGE_VALUE, std::to_string(currentStageNumber));
 
-    for (auto& s : individualComponentContainer) {
-        for (auto& element : s.second) {
-            if(*(element.first) != nullptr)
-                displayWindow.draw (**(element.first));
+    drawDisplayContainer(displayWindow);
+
+    if(insertRowsAtbottom)
+    {
+        auto timeElapsed = rowInsertionTimer.restart();
+        oneMinTime -= timeElapsed;
+        if(oneMinTime <= sf::Time::Zero)
+        {
+            insertRowAtBottom();
+            oneMinTime = sf::seconds(60);
+        }
+
+    }
+}
+
+void DisplayContainer::insertRowAtBottom()
+{
+    // shift whole structre up by one row
+    for(auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+    {
+        if(it->second.size() > 0)
+        {
+            auto prevRowPtr = it;
+            prevRowPtr--;
+            for(auto& element : it->second)
+            {   
+                auto xpos = (*(element.first))->getPosition().x;
+                (*(element.first))->setPosition(xpos,prevRowPtr->first);
+                prevRowPtr->second.push_back(element);
+            }
+            it->second.clear();
+        }
+    }   
+
+    // create a vector of squares
+    // first get the position randomly and also get the number of squares to be inserted randomly
+    static std::random_device randomDev;
+    static std::mt19937 randomGenerator;
+    static std::uniform_int_distribution<int> uniformDistribution(1,19);
+    std::vector<unsigned int> squareIndexes;
+
+    auto numberOfSquares = uniformDistribution(randomGenerator);
+    uniformDistribution.param(std::uniform_int_distribution<int>::param_type{0, 19});
+
+    // dont insert the squares at same index otherwise they will overlap and wrong count of squares in every row
+    while(squareIndexes.size() != numberOfSquares)
+    {
+        auto idx = uniformDistribution(randomGenerator);
+        if(std::find(squareIndexes.begin(), squareIndexes.end(), idx) == squareIndexes.end())
+        {
+            // idx not found then add
+            squareIndexes.push_back(idx);
         }
     }
 
+    std::vector<std::pair<sf::RectangleShape **, IShape *>> newRowAtBottom;
 
-    std::string displayScoreVal = std::to_string (getScore ());
-    fContainerRef.setFontString (GameFontStrings::SCORE_VALUE, displayScoreVal);
-
-    std::string stageVal = std::to_string (currentStageNumber);
-    fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageVal);
+    for(unsigned int idx : squareIndexes)
+    {        
+        auto* s = shapeGen.getSingleSquareShape(idx,std::prev(individualComponentContainer.end())->first);
+        for(auto& element : s->getShapeContainer())
+        {
+            newRowAtBottom.push_back(std::make_pair(element,s));
+        }
+    }
+    // added row at the bottom
+    std::prev(individualComponentContainer.end())->second.clear();
+    for(auto& element : newRowAtBottom)
+    {
+        std::prev(individualComponentContainer.end())->second.push_back(element);
+    }
 }
 
-
-void DisplayContainer::handleBombDrop(IShape* bombShape)
+void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 {
-    float minx = 1000;
-    float maxx = 0;
+    unsigned int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x);
+    unsigned int maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
-    for (auto& s : lastShape->getShapeContianer ()) 
-    {
-        minx = std::min(minx,(*s)->getPosition ().x);
-        maxx = std::max(maxx,(*s)->getPosition ().x);        
-    }
+    std::vector<unsigned int> removeFromRows;
 
-    int countRows = 3;
-    for (auto& s : individualComponentContainer) 
+    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
     {
-        bool blocksRemoved = false;
-        for (auto& element : s.second) 
+        for (auto &element : it->second)
         {
             auto x = static_cast<int>((*(element.first))->getPosition().x);
-            if(x >= minx && x <= maxx)
+            if (x >= minx && x <= maxx)
             {
-
-                delete *element.first;
-                *element.first = nullptr;
-                element.second->setBroken();   
-                blocksRemoved = true;             
+                removeFromRows.push_back(it->first);
+                break;
             }
         }
 
-        if(blocksRemoved)
-        {
-            countRows--;
-        }
-
-        if(countRows == 0)
+        if (removeFromRows.size() == NO_ROWS_DESTROYED_BY_BOMB)
             break;
-            
-    }    
-
-}
-
-
-void DisplayContainer::processshapes (sf::RenderWindow& displayWindow) 
-{
-    if (isGameOverState) {
-        return;
     }
 
-    if(lastShape == nullptr)
+    if (removeFromRows.size() == 0)
     {
         return;
     }
 
-    moveStatus = lastShape->getMoveStatus();
-    if (!moveStatus) 
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, removeFromRows[0]));
+
+    // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
+    // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
+    unsigned int count = 4000 / 100;
+
+    bool blocksRemoved = false;
+
+    bombExplosionSound.play();
+
+    while (count > 0)
+    {
+        displayWindow.clear(sf::Color::Black);
+
+        prepareDefaultScreenItems(displayWindow);
+
+        bombExplosionParticles.update();
+
+        displayWindow.draw(bombExplosionParticles);
+
+        if (!blocksRemoved)
+        {
+            blocksRemoved = true;
+            for (auto &rowY : removeFromRows)
+            {
+                std::sort(
+                    individualComponentContainer[rowY].begin(), individualComponentContainer[rowY].end(),
+                    [](std::pair<sf::RectangleShape **, IShape *> &a, std::pair<sf::RectangleShape **, IShape *> &b) {
+                        return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x;
+                    });
+
+                for (auto &element : individualComponentContainer[rowY])
+                {
+                    auto x = static_cast<int>((*(element.first))->getPosition().x);
+                    if (x >= minx && x <= maxx)
+                    {
+                        delete *(element.first);
+                        *(element.first) = nullptr;
+                    }
+                }
+
+                if (individualComponentContainer[rowY].size() > 0)
+                {
+                    individualComponentContainer[rowY].erase(
+                        std::remove_if(individualComponentContainer[rowY].begin(),
+                                       individualComponentContainer[rowY].end(),
+                                       [](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                           return (*(element.first) == nullptr);
+                                       }),
+                        individualComponentContainer[rowY].end());
+                }
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        drawDisplayContainer(displayWindow);
+
+        displayWindow.display();
+
+        count--;
+    }
+}
+
+void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
+{
+    if (isGameOverState)
+    {
+        return;
+    }
+
+    if (lastShape == nullptr)
+    {
+        return;
+    }
+
+    auto moveStatus = lastShape->getMoveStatus();
+    if (!moveStatus)
     {
 
         // mapping individual component of shape to its y co-ordinate
-        for (auto& s : lastShape->getShapeContianer ()) 
+
+        if (lastShape->isBomb())
         {
-            auto yVal = getAllowedYVal((*s)->getPosition ().y);
-            individualComponentContainer[yVal].push_back (std::make_pair (s, lastShape));
+            handleBombDrop(displayWindow);
+        }
+        else
+        {
+            for (auto &s : lastShape->getShapeContainer())
+            {
+                auto yVal = getAllowedYVal((*s)->getPosition().y);
+                individualComponentContainer[yVal].push_back(std::make_pair(s, lastShape));
+            }
+            shapeSettleSound.play();
         }
 
-        if(lastShape->isBomb())
-        {
-            handleBombDrop(lastShape);
-        }
-
-        checkFullRows (displayWindow);
+        checkFullRows(displayWindow);
         lastShape = nullptr;
-        shapeSettleSound.play();
-
     }
 }
 
-void DisplayContainer::prepareDefaultScreenItems(sf::RenderWindow& displayWindow)
+void DisplayContainer::drawDisplayContainer(sf::RenderWindow &displayWindow)
 {
-
-    displayWindow.draw (borderLine1, 2, sf::Lines);
-    displayWindow.draw (borderLine2, 2, sf::Lines);
-    displayWindow.draw (borderLine3, 2, sf::Lines);
-    displayWindow.draw (borderLine4, 2, sf::Lines);
-
-    displayWindow.draw (partitionLine, 2, sf::Lines);
-
-
-    fContainerRef.drawFonts (displayWindow);
-    nextShape->drawShape (displayWindow);
-
+    for (auto &s : individualComponentContainer)
+    {
+        for (auto &element : s.second)
+        {
+            if (*(element.first) != nullptr)
+                displayWindow.draw(**(element.first));
+        }
+    }
 }
 
-void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow& displayWindow)
+void DisplayContainer::prepareDefaultScreenItems(sf::RenderWindow &displayWindow)
+{
+
+    displayWindow.draw(borderLine1, 2, sf::Lines);
+    displayWindow.draw(borderLine2, 2, sf::Lines);
+    displayWindow.draw(borderLine3, 2, sf::Lines);
+    displayWindow.draw(borderLine4, 2, sf::Lines);
+    displayWindow.draw(highscore_partition_line1, 2, sf::Lines);
+    displayWindow.draw(highscore_partition_line2, 2, sf::Lines);
+
+    displayWindow.draw(partitionLine, 2, sf::Lines);
+
+    fContainerRef.drawFonts(displayWindow);
+    nextShape->drawShape(displayWindow);
+}
+
+void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow &displayWindow)
 {
 
     // to move the row down, you have to animate
@@ -265,59 +407,66 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
     // take the whole container and draw it
     // take the row which needs to fall and move it and then draw it
     // then display it
-    sf::Vector2f fallVelocity = {0,0.2f};
+    const sf::Vector2f fallVelocity = {0, 0.2f};
 
     /*
 
         how would you move the pieces? some are broken and some are full shapes
 
-        if you use IShape interface to move the pieces, then it will moove the shape from different 
+        if you use IShape interface to move the pieces, then it will moove the shape from different
         rows and you cant control
 
         so you have to take induiidual shquares and drop them. but you have to see until which point
         then should be dropped because for whole shape its different and for broken shape its different
 
     */
-   
+
     bool wasShapeMoved = true;
     bool wholeShapeMoved = false;
 
-    std::unordered_map<int,std::vector<int>> wholeShapeXY;
+    std::set<IShape *> addedWholeShapes;
 
-    for(auto& e : individualComponentContainer[sourceY])
+    std::unordered_map<int, std::vector<int>> wholeShapeXY;
+
+    for (auto &e : individualComponentContainer[sourceY])
     {
-        if(!(e.second)->isShapeBroken())
+        if (!(e.second)->isShapeBroken())
         {
-            for (auto& s : ((e.second))->getShapeContianer ())
+            if (addedWholeShapes.find((e.second)) == addedWholeShapes.end())
             {
-                auto xval = (*(s))->getPosition().x;
-                auto yval = getAllowedYVal((*(s))->getPosition().y); 
-                wholeShapeXY[yval].push_back(xval);
+                addedWholeShapes.insert((e.second));
+                for (auto &s : ((e.second))->getShapeContainer())
+                {
+                    auto xval = (*(s))->getPosition().x;
+                    auto yval = getAllowedYVal((*(s))->getPosition().y);
+                    wholeShapeXY[yval].push_back(xval);
+                }
             }
         }
     }
+    addedWholeShapes.clear();
 
-    while(wasShapeMoved)
+    while (wasShapeMoved)
     {
         displayWindow.clear(sf::Color::Black);
 
         prepareDefaultScreenItems(displayWindow);
 
-        if(individualComponentContainer[sourceY].size() > 0)
+        if (individualComponentContainer[sourceY].size() > 0)
         {
             wasShapeMoved = false;
 
-            for(auto& e : individualComponentContainer[sourceY])
+            for (auto &e : individualComponentContainer[sourceY])
             {
                 auto xval = (*(e.first))->getPosition().x;
-                auto p1 = (*(e.first))->getPosition() + fallVelocity; 
+                auto p1 = (*(e.first))->getPosition() + fallVelocity;
 
-                if((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval,removedRow))
+                if ((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval, removedRow))
                 {
                     (*(e.first))->move(fallVelocity);
                     wasShapeMoved = true;
                 }
-                else if((e.second)->moveShape())
+                else if ((e.second)->moveShape())
                 {
                     wasShapeMoved = true;
                     wholeShapeMoved = true;
@@ -329,120 +478,107 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
             wasShapeMoved = false;
         }
 
-        for (auto& s : individualComponentContainer) 
-        {
-            for (auto& element : s.second) 
-            {
-                displayWindow.draw (**(element.first));
-            }
-        }    
+        drawDisplayContainer(displayWindow);
 
         displayWindow.display();
-
     }
 
-
-    for(auto& e : individualComponentContainer[sourceY])
+    for (auto &e : individualComponentContainer[sourceY])
     {
-
-        if((e.second)->isShapeBroken())
+        auto *shapeInterface = (e.second);
+        if (shapeInterface->isShapeBroken())
         {
-            auto ypos = getAllowedYVal((*(e.first))->getPosition ().y);
-            individualComponentContainer[ypos].push_back(e);            
+            const auto ypos = getAllowedYVal((*(e.first))->getPosition().y);
+            individualComponentContainer[ypos].push_back(std::make_pair(e.first, e.second));
         }
         else
         {
-            if(wholeShapeMoved)
+            if (wholeShapeMoved)
             {
-                for (auto& s : ((e.second))->getShapeContianer ())
+                if (addedWholeShapes.find(shapeInterface) == addedWholeShapes.end())
                 {
-                    auto yval = getAllowedYVal((*s)->getPosition().y); 
-                    individualComponentContainer[yval].push_back(std::make_pair (s, e.second));
+                    addedWholeShapes.insert(shapeInterface);
+
+                    auto squares = shapeInterface->getShapeContainer();
+                    for (auto &s : squares)
+                    {
+                        const auto yval = getAllowedYVal((*s)->getPosition().y);
+                        individualComponentContainer[yval].push_back(std::make_pair(s, shapeInterface));
+                    }
                 }
             }
         }
-
     }
 
-
-    if(wholeShapeMoved)
+    if (wholeShapeMoved)
     {
-        for(auto&[originalY, originalXs] : wholeShapeXY)
+        for (const auto &[originalY, originalXs] : wholeShapeXY)
         {
-            for(auto& x1 : originalXs)
+            for (auto &x1 : originalXs)
             {
-                    // if whole shape like stick which is vertical falls, then new position might overlap with older position
-                    // so only remove single square  in case they overlap, not 2 and for that count variable is used
-                    // if count is more that 0 means we have seen this square at this position and dont remove it 
-                    unsigned int count = 0;
-                    individualComponentContainer[originalY].erase(
-                        std::remove_if(individualComponentContainer[originalY].begin(),
-                                        individualComponentContainer[originalY].end(),
-                                        [&count,&x1](std::pair<sf::RectangleShape**, IShape*>& element)
-                                        {
-                                            if((static_cast<int>(abs((*(element.first))->getPosition().x-x1)) < 2) && !element.second->isShapeBroken() && count == 0)
-                                            {
-                                                count++;
-                                                return true;
-                                            }
-                                            else
-                                            {
-                                                return false;
-                                            }
-                                        }
-                    ), individualComponentContainer[originalY].end());
+                // if whole shape like stick which is vertical falls, then new position might overlap with older
+                // position so only remove single square  in case they overlap, not 2 and for that count variable is
+                // used if count is more that 0 means we have seen this square at this position and dont remove it
+                unsigned int count = 0;
+                individualComponentContainer[originalY].erase(
+                    std::remove_if(individualComponentContainer[originalY].begin(),
+                                   individualComponentContainer[originalY].end(),
+                                   [&count, &x1](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                       if ((static_cast<int>(abs((*(element.first))->getPosition().x - x1)) < 2) &&
+                                           !element.second->isShapeBroken() && count == 0)
+                                       {
+                                           count++;
+                                           return true;
+                                       }
+                                       else
+                                       {
+                                           return false;
+                                       }
+                                   }),
+                    individualComponentContainer[originalY].end());
             }
         }
     }
 
-    if(individualComponentContainer[sourceY].size() > 0)
+    if (individualComponentContainer[sourceY].size() > 0)
     {
         individualComponentContainer[sourceY].erase(
-            std::remove_if(individualComponentContainer[sourceY].begin(),
-                            individualComponentContainer[sourceY].end(),
-                            [](std::pair<sf::RectangleShape**, IShape*> element)
-                            {
-                                return ((element.second)->isShapeBroken());
-                            }
-                            
-        ),individualComponentContainer[sourceY].end());
+            std::remove_if(
+                individualComponentContainer[sourceY].begin(), individualComponentContainer[sourceY].end(),
+                [](std::pair<sf::RectangleShape **, IShape *> &element) { return ((element.second)->isShapeBroken()); }
+
+                ),
+            individualComponentContainer[sourceY].end());
     }
-
-
 }
 
-
-void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow& displayWindow)
+void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow &displayWindow)
 {
     // sorting here is required because we have to make row disappear from left to right
     // so sort in ascending order of x-coordinate value
-    std::sort(individualComponentContainer[removedRowY].begin(), 
-                individualComponentContainer[removedRowY].end(), 
-                [](std::pair<sf::RectangleShape**, IShape*>& a, std::pair<sf::RectangleShape**, IShape*>& b)
-                {
-                    return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x; 
-                } );
-
-    unsigned int interval = 0;
+    std::sort(individualComponentContainer[removedRowY].begin(), individualComponentContainer[removedRowY].end(),
+              [](std::pair<sf::RectangleShape **, IShape *> &a, std::pair<sf::RectangleShape **, IShape *> &b) {
+                  return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x;
+              });
 
     unsigned int idx = 0;
-    for(auto& element: individualComponentContainer[removedRowY])
+    for (auto &element : individualComponentContainer[removedRowY])
     {
-       rowCollapseParticleSystems[idx].setEmitter( (*(element.first))->getPosition());
-       idx += 1;
+        rowCollapseParticleSystems[idx].setEmitter((*(element.first))->getPosition());
+        idx += 1;
     }
 
     idx = 0;
 
     rowRemovedExplosionSound.play();
-    
-    for(auto& element: individualComponentContainer[removedRowY])
+
+    for (auto &element : individualComponentContainer[removedRowY])
     {
         displayWindow.clear(sf::Color::Black);
 
         prepareDefaultScreenItems(displayWindow);
 
-        for(unsigned int i = 0; i <= idx; i++)
+        for (unsigned int i = 0; i <= idx; i++)
         {
             rowCollapseParticleSystems[i].update();
             displayWindow.draw(rowCollapseParticleSystems[i]);
@@ -453,119 +589,212 @@ void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow& disp
         *element.first = nullptr;
         element.second->setBroken();
 
-        for (auto& s : individualComponentContainer) {
-            for (auto& element : s.second) {
-                if(*(element.first) != nullptr)
-                {
-                    displayWindow.draw (**(element.first));
-                }
-            }
-        }    
+        drawDisplayContainer(displayWindow);
 
         displayWindow.display();
-        std::this_thread::sleep_for (std::chrono::milliseconds (100));
-        interval++;
-
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     individualComponentContainer[removedRowY].clear();
-
 }
 
-void DisplayContainer::shiftStructureDownward (sf::RenderWindow& displayWindow) {
-    int startShiftYVal = 0;
-    int fullRowYVal    = 0;
-    bool shiftRequired = false;
-    for (auto it = individualComponentContainer.rbegin ();
-         it != individualComponentContainer.rend (); it++) 
+void DisplayContainer::shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal)
+{
+    int startShiftYVal = yVal - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    int fullRowYVal = yVal;
+
+    eraseCompletedRow(yVal, displayWindow);
+    scoreValue += SCORE_PER_ROW;
+
+    for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-        if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) 
+
+        if (it->first <= startShiftYVal)
         {
-            shiftRequired = true;
-            if (fullRowYVal == 0) {
-                fullRowYVal = it->first;
-            }
-
-            eraseCompletedRow(it->first,displayWindow);
-
-            scoreValue += SCORE_PER_ROW;
-            it++;
-            startShiftYVal = it->first;
-            break;
+            makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
+            startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+            fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
         }
     }
-
-    if (shiftRequired) {
-        for (auto it = individualComponentContainer.rbegin ();
-             it != individualComponentContainer.rend (); it++) {
-
-            if (it->first <= startShiftYVal) 
-            {
-                makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
-                startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-                fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-            }
-        }
-    }
-
-    
 }
 
-void DisplayContainer::checkFullRows (sf::RenderWindow& displayWindow) {
-    while (1) {
+void DisplayContainer::checkFullRows(sf::RenderWindow &displayWindow)
+{
+    while (1)
+    {
         bool removeRows = false;
-        for (auto it = individualComponentContainer.rbegin ();
-             it != individualComponentContainer.rend (); it++) {
-            std::cout<<it->first<<"----"<<it->second.size()<<std::endl;
-            if (it->second.size () == NUMBER_OF_SQUARES_IN_ROW) {
-                shiftStructureDownward (displayWindow);
+        for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
+        {
+            std::cout << it->first << "----" << it->second.size() << std::endl;
+            if (it->second.size() == NUMBER_OF_SQUARES_IN_ROW)
+            {
+                shiftStructureDownward(displayWindow, it->first);
                 removeRows = true;
             }
         }
 
-        if (!removeRows) {
+        if (!removeRows)
+        {
             break;
         }
     }
 }
 
-void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
-    if (isGameOver ()) {
-        isGameOverState = true;
-        scoreValue      = 0;
-        for (auto it = individualComponentContainer.begin ();
-             it != individualComponentContainer.end (); it++) {
-            for (auto& element : it->second) {
-                if (element.first != nullptr)
-                    delete *element.first;
-                    *element.first = nullptr;
-
-                element.second = nullptr;
+void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
+{
+    if(gameComplete)
+    {
+        showGameCompleteScreenAndExit(displayWindow); 
+    }
+    else if (isGameOver() || windowClosePressed)
+    {
+        if (scoreValue > 0 && scoreValue > MetaFileHandler::getMinHighScore())
+        {
+            if (highScoreUsername.size() == 0)
+            {
+                displayEnterUsernameScreen = true;
             }
-            it->second.clear ();
-        }
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::GAME_OVER);
-        sf::Event event;
 
-        while (displayWindow.pollEvent (event)) {
-            if (event.type == sf::Event::KeyPressed) {
-                if (sf::Keyboard::isKeyPressed (sf::Keyboard::R)) {
-                    isGameOverState = false;
-                    generateAndDrawShape (displayWindow);
-                    break;
-                } else if (sf::Keyboard::isKeyPressed (sf::Keyboard::E)) {
-                    displayWindow.close ();
-                    break;
+            currentscore = scoreValue;
+            highScoreAchieved = true;
+        }
+        cleanDisplayContainer();
+        scoreValue = 0;
+        if(!windowClosePressed)
+        {
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER);
+        }
+
+        if(windowClosePressed && !displayEnterUsernameScreen && highScoreAchieved)
+        {
+            // window closed with new high score and known username, just show a message string and exit
+            displayWindow.clear();
+            displayWindow.draw(borderLine1, 2, sf::Lines);
+            displayWindow.draw(borderLine2, 2, sf::Lines);
+            displayWindow.draw(borderLine3, 2, sf::Lines);
+            displayWindow.draw(borderLine4, 2, sf::Lines);
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED);
+            displayWindow.display();
+            std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+        }
+
+        if (displayEnterUsernameScreen)
+        {
+            bool shiftPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift);
+
+            for(unsigned int key = sf::Keyboard::A; key <= sf::Keyboard::Z; key++)
+            {
+                if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
+                {
+                    std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                    if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
+                    {
+                        char letter = 'A' + (key - sf::Keyboard::A);
+                        highScoreUsername += shiftPressed ? letter : std::tolower(letter);    
+                        break;
+                    }                        
                 }
             }
+
+            for(unsigned int key = sf::Keyboard::Num0; key <= sf::Keyboard::Num9; key++)
+            {
+                if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
+                {
+                    std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                    if(sf::Keyboard::isKeyPressed(static_cast<sf::Keyboard::Key>(key)))
+                    {
+                        highScoreUsername += std::to_string(key - sf::Keyboard::Num0);    
+                        break;
+                    }                        
+                }
+            }
+
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
+                {
+                    if(highScoreUsername.size() > 0)
+                    {
+                        highScoreUsername.pop_back();   
+                    }
+
+                }
+
+            }
+            else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            {
+                std::this_thread::sleep_for (std::chrono::milliseconds (90));
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+                {
+                    displayEnterUsernameScreen = false;
+                    highScoreAchieved = false;
+                    MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+                }
+            }
+
         }
-    }    
-    else if(isGamePaused)
-    {
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::GAME_PAUSED);
-        fContainerRef.drawFonts (displayWindow);
-        displayWindow.draw (partitionLine, 2, sf::Lines);
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::F10))
+        {
+            isGameOverState = false;
+            highScoreDisplayData.clear();
+            cleanDisplayContainer();
+            MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+            highScoreDisplayData = MetaFileHandler::getHighScoreDisplayString();
+            generateAndDrawShape(displayWindow);
+            highScoreAchieved = false;
+
+        }
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+        {
+            cleanDisplayContainer();
+            MetaFileHandler::saveMetaDataFileAndClose();
+            displayWindow.close();
+        }
+
+        // Complex if else ladder based on different scenario
+        if (displayEnterUsernameScreen)
+        {
+            fContainerRef.setFontString(GameFontStrings::USERNAME_INPUT_STRING, highScoreUsername);
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::HIGHSCORE_ACHIEVED);
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::ENTER_USERNAME);
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::USERNAME_INPUT_STRING);
+        }
+        else
+        {
+            // show the string only if high score was achieved
+            if (highScoreAchieved)
+            {
+                fContainerRef.drawSingleString(displayWindow, GameFontStrings::HIGHSCORE_ACHIEVED);
+            }
+
+            // if the window close was not done and show user instruction
+            if(!windowClosePressed)
+            {
+                fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER_USER_SELECTION);
+            }
+            else
+            {
+                // if window was closed: then update the high score in file if the username was not taken from user
+                // if the user entered the username then high score was updated already above
+                if(!displayEnterUsernameScreen)
+                {
+                    MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+                }
+                MetaFileHandler::saveMetaDataFileAndClose();
+                displayWindow.close();
+            }
+        }
     }
-    else if(getScore() >= CLEARING_SCORE_PER_STAGE[currentStageNumber-1])
+    else if (isGamePaused)
+    {
+        fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_PAUSED);
+        fContainerRef.drawFonts(displayWindow);
+        displayWindow.draw(partitionLine, 2, sf::Lines);
+        displayWindow.draw(highscore_partition_line1, 2, sf::Lines);
+        displayWindow.draw(highscore_partition_line2, 2, sf::Lines);
+    }
+    else if (scoreValue >= CLEARING_SCORE_PER_STAGE[currentStageNumber - 1])
     {
         // steps for change stage:
         // show complete stage message
@@ -574,39 +803,30 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
         // clear the container
         // set the new parameters for the new stage, generate new shapes
         // display
-        std::cout<<"============stage complete"<<std::endl;
+        std::cout << "============stage complete" << std::endl;
         // clear the container
-        for (auto it = individualComponentContainer.begin ();
-             it != individualComponentContainer.end (); it++) {
-            for (auto& element : it->second) {
-                if (element.first != nullptr)
-                    delete *element.first;
-                    *element.first = nullptr;
-
-            }
-            it->second.clear ();
-        }
+        cleanDisplayContainer();
 
         // clear the screen
-        displayWindow.clear (sf::Color::Black);
+        displayWindow.clear(sf::Color::Black);
 
         // show stage complete message
         std::string stageCompleteMsg = "Stage " + std::to_string(currentStageNumber) + " Complete!!";
-        fContainerRef.setFontString (GameFontStrings::STAGE_COMPLETE_MESSAGE, stageCompleteMsg);
-        fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_COMPLETE_MESSAGE);
+        fContainerRef.setFontString(GameFontStrings::STAGE_COMPLETE_MESSAGE, stageCompleteMsg);
+        fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_COMPLETE_MESSAGE);
 
         // draw border line
-        displayWindow.draw (borderLine1, 2, sf::Lines);
-        displayWindow.draw (borderLine2, 2, sf::Lines);
-        displayWindow.draw (borderLine3, 2, sf::Lines);
-        displayWindow.draw (borderLine4, 2, sf::Lines);
+        displayWindow.draw(borderLine1, 2, sf::Lines);
+        displayWindow.draw(borderLine2, 2, sf::Lines);
+        displayWindow.draw(borderLine3, 2, sf::Lines);
+        displayWindow.draw(borderLine4, 2, sf::Lines);
 
         // display the message
-        displayWindow.display ();
+        displayWindow.display();
         // wait 1 sec
-        std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         // clear the screen
-        displayWindow.clear (sf::Color::Black);
+        displayWindow.clear(sf::Color::Black);
 
         currentStageNumber++;
         showCurrentStageScreen(displayWindow);
@@ -615,25 +835,47 @@ void DisplayContainer::handleGameState (sf::RenderWindow& displayWindow) {
         lastShape = nullptr;
         setParamtersForCurrentStage();
         // display the necessary fonts
-        fContainerRef.drawFonts (displayWindow);
+        fContainerRef.drawFonts(displayWindow);
         // display partition line
-        displayWindow.draw (partitionLine, 2, sf::Lines);
-
+        displayWindow.draw(partitionLine, 2, sf::Lines);
     }
-    else if(!isGamePaused && !isGameOverState)
+    else if (!isGamePaused && !isGameOverState)
     {
         moveShapes();
-        fContainerRef.drawFonts (displayWindow);
-        displayWindow.draw (partitionLine, 2, sf::Lines);
+        fContainerRef.drawFonts(displayWindow);
+        displayWindow.draw(partitionLine, 2, sf::Lines);
+        displayWindow.draw(highscore_partition_line1, 2, sf::Lines);
+        displayWindow.draw(highscore_partition_line2, 2, sf::Lines);
     }
+    
+    displayWindow.draw(borderLine1, 2, sf::Lines);
+    displayWindow.draw(borderLine2, 2, sf::Lines);
+    displayWindow.draw(borderLine3, 2, sf::Lines);
+    displayWindow.draw(borderLine4, 2, sf::Lines);
 
-    displayWindow.draw (borderLine1, 2, sf::Lines);
-    displayWindow.draw (borderLine2, 2, sf::Lines);
-    displayWindow.draw (borderLine3, 2, sf::Lines);
-    displayWindow.draw (borderLine4, 2, sf::Lines);
+    displayWindow.display();
+    displayWindow.clear(sf::Color::Black);
+}
 
-    displayWindow.display ();
-    displayWindow.clear (sf::Color::Black);
+void DisplayContainer::showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow)
+{
+    displayWindow.clear(sf::Color::Black);
+    // draw border line
+    displayWindow.draw(borderLine1, 2, sf::Lines);
+    displayWindow.draw(borderLine2, 2, sf::Lines);
+    displayWindow.draw(borderLine3, 2, sf::Lines);
+    displayWindow.draw(borderLine4, 2, sf::Lines);
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_COMPLETE_MESSAGE);
+    displayWindow.display();
+    
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    displayWindow.clear(sf::Color::Black);
+    MetaFileHandler::saveMetaDataFileAndClose();
+    cleanDisplayContainer();
+
+    displayWindow.close ();   
+    exit(1);
 }
 
 void DisplayContainer::moveShapes()
@@ -651,79 +893,89 @@ void DisplayContainer::resetGamePaused()
     isGamePaused = false;
 }
 
-
 void DisplayContainer::setParamtersForCurrentStage()
 {
-    if(currentStageNumber == 1)
-    {
-        SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
-        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
-    }
-    else if(currentStageNumber == 2)
-    {
-        // set allowed shapes
-        SHAPE_DOWN_FALL_SPEED_Y = 0.2f;
-        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
-    }    
-    else if(currentStageNumber == 3)
-    {
-        // set allowed shapes
-        SHAPE_DOWN_FALL_SPEED_Y = 0.3f;
-        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber-1]);
-    }    
-    else if(currentStageNumber == 4)
-    {
-        // set allowed shapes
-        SHAPE_DOWN_FALL_SPEED_Y = 0.7f;
-    }    
+    SHAPE_DOWN_FALL_SPEED_Y = FALL_SPEED_FOR_STAGE[currentStageNumber - 1];
 
+    if (currentStageNumber == 1)
+    {
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
+    }
+    else if (currentStageNumber == 2)
+    {
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
+    }
+    else if (currentStageNumber == 3)
+    {
+        shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
+    }
+    else if (currentStageNumber == 4)
+    {
+        // TODO: in the last stage, the whole structre will move upwards at regular interval, maybe 1 min
+        // for this add a row at the bottom with random x values
+        // or offer one more shape or power to the user 
+        insertRowsAtbottom = true;
+    }
+    else
+    {
+        // game complete message and show score, then close
+        gameComplete = true;
+    }
 }
 
-void DisplayContainer::showCurrentStageScreen(sf::RenderWindow& displayWindow)
+
+void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow)
 {
     // clear the screen
-    displayWindow.clear (sf::Color::Black);
+    displayWindow.clear(sf::Color::Black);
 
     // draw border line
-    displayWindow.draw (borderLine1, 2, sf::Lines);
-    displayWindow.draw (borderLine2, 2, sf::Lines);
-    displayWindow.draw (borderLine3, 2, sf::Lines);
-    displayWindow.draw (borderLine4, 2, sf::Lines);
+    displayWindow.draw(borderLine1, 2, sf::Lines);
+    displayWindow.draw(borderLine2, 2, sf::Lines);
+    displayWindow.draw(borderLine3, 2, sf::Lines);
+    displayWindow.draw(borderLine4, 2, sf::Lines);
 
     // show next stage message
     auto stageCompleteMsg = std::to_string(currentStageNumber);
-    // display next stage number message        
-    fContainerRef.setFontString (GameFontStrings::STAGE_VALUE, stageCompleteMsg);
-    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_COMPLETE_MSG_X,STAGE_COMPLETE_MSG_Y);
-    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_COMPLETE_MSG_X + 80,STAGE_COMPLETE_MSG_Y);
+    // display next stage number message
+    fContainerRef.setFontString(GameFontStrings::STAGE_VALUE, stageCompleteMsg);
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_LABEL, STAGE_COMPLETE_MSG_X,
+                                   STAGE_COMPLETE_MSG_Y);
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_VALUE, STAGE_COMPLETE_MSG_X + 80,
+                                   STAGE_COMPLETE_MSG_Y);
     // display
-    displayWindow.display ();
+    displayWindow.display();
     // wait
-    std::this_thread::sleep_for (std::chrono::milliseconds (1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // clear
-    displayWindow.clear (sf::Color::Black);
+    displayWindow.clear(sf::Color::Black);
 
     // reset the position of stage label and values string
-    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_LABEL,STAGE_LEBEL_X, STAGE_LEBEL_Y);
-    fContainerRef.drawSingleString (displayWindow, GameFontStrings::STAGE_VALUE,STAGE_VALUE_X, STAGE_VALUE_Y);
-
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_LABEL,
+                                   stringToLocation.at(GameFontStrings::STAGE_LABEL).x,
+                                   stringToLocation.at(GameFontStrings::STAGE_LABEL).y);
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_VALUE,
+                                   stringToLocation.at(GameFontStrings::STAGE_VALUE).x,
+                                   stringToLocation.at(GameFontStrings::STAGE_VALUE).y);
 }
 
 void DisplayContainer::cleanDisplayContainer()
 {
-        for (auto it = individualComponentContainer.begin (); 
-            it != individualComponentContainer.end (); it++) 
+    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+    {
+        for (auto &element : it->second)
         {
-            for(auto& element: it->second)
+            if (element.first != nullptr)
             {
-                delete element.first;
-
-                if(element.second != nullptr)
-                {
-                    delete element.second;
-                    element.second = nullptr;
-                }
-            }            
+                delete *element.first;
+            }
+            *element.first = nullptr;
         }
+        it->second.clear();
+    }
+}
 
+void DisplayContainer::handleWindowCloseEvent()
+{
+    windowClosePressed = true;    
 }
