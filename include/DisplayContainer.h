@@ -75,12 +75,13 @@ class DisplayContainer
     bool highScoreAchieved;
     bool insertRowsAtbottom;
     bool gameComplete;
+    bool windowClosePressed;
     
     std::string highScoreUsername;
     uint32_t currentscore;
     std::string highScoreDisplayData;
     
-    int getLowestYVal(const int x, const int refY);
+    int getLowestYVal(const unsigned int x, const unsigned int refY);
 
     void shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal);
 
@@ -99,8 +100,6 @@ class DisplayContainer
     void handleBombDrop(sf::RenderWindow &displayWindow);
 
     void drawDisplayContainer(sf::RenderWindow &displayWindow);
-
-    void prepareHighscoreDisplaydata();
 
     void insertRowAtBottom();
 
@@ -134,5 +133,7 @@ class DisplayContainer
     void eraseCompletedRow(int removedRowY, sf::RenderWindow &displayWindow);
 
     void saveHighScoreInFile();
+
+    void handleWindowCloseEvent();
 
 };

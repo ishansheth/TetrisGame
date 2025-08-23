@@ -13,7 +13,7 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
     : shapeGen(shapegenerator), lastShape(nullptr), nextShape(nullptr), scoreValue(0), isGameOverState(false),
       isGamePaused(false), fContainerRef(fCon), currentStageNumber(1), bombExplosionParticles(1000),
       displayEnterUsernameScreen(false),highScoreAchieved(false), insertRowsAtbottom(false),gameComplete(false),
-      oneMinTime(sf::seconds(60))
+      windowClosePressed(false),oneMinTime(sf::seconds(60))
 {
     auto yVal = LAST_ROW_Y;
     for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
@@ -53,7 +53,7 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
     }
 
     MetaFileHandler::readMetaDataFile();
-    prepareHighscoreDisplaydata();
+    highScoreDisplayData = MetaFileHandler::getHighScoreDisplayString();
 }
 
 bool DisplayContainer::isGameOver()
@@ -101,7 +101,7 @@ bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const I
     return false;
 }
 
-int DisplayContainer::getLowestYVal(const int searchX, const int refY)
+int DisplayContainer::getLowestYVal(const unsigned int searchX, const unsigned int refY)
 {
     auto iteratorPtr = individualComponentContainer.find(refY);
     for (; iteratorPtr != individualComponentContainer.end(); iteratorPtr++)
@@ -135,10 +135,12 @@ int DisplayContainer::getAllowedYVal(const float yCoordinate)
     return rowYCoordinate[minIdx];
 }
 
-void DisplayContainer::handleKey(const sf::Keyboard::Key &k)
+void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
 {
     if (lastShape)
-        lastShape->handleKey(k);
+    {
+        lastShape->handleKey(key);
+    }
 }
 
 void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
@@ -155,9 +157,11 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
         nextShape = shapeGen.getNextShape(sf::Vector2f(NEXT_SHAPE_X, NEXT_SHAPE_Y), this);
     }
 
-    lastShape->drawShape(displayWindow);
-    nextShape->drawShape(displayWindow);
-
+    if(!windowClosePressed)
+    {
+        lastShape->drawShape(displayWindow);
+        nextShape->drawShape(displayWindow);
+    }
 
     fContainerRef.setFontString(GameFontStrings::HIGH_SCORE_VALUES, highScoreDisplayData);
     fContainerRef.setFontString(GameFontStrings::SCORE_VALUE, std::to_string(scoreValue));
@@ -238,8 +242,8 @@ void DisplayContainer::insertRowAtBottom()
 
 void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 {
-    float minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x);
-    float maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+    unsigned int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x);
+    unsigned int maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
     std::vector<unsigned int> removeFromRows;
 
@@ -641,7 +645,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
     {
         showGameCompleteScreenAndExit(displayWindow); 
     }
-    else if (isGameOver())
+    else if (isGameOver() || windowClosePressed)
     {
         if (scoreValue > 0 && scoreValue > MetaFileHandler::getMinHighScore())
         {
@@ -652,11 +656,13 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
 
             currentscore = scoreValue;
             highScoreAchieved = true;
-            cleanDisplayContainer();
         }
-
+        cleanDisplayContainer();
         scoreValue = 0;
-        fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER);
+        if(!windowClosePressed)
+        {
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER);
+        }
 
         if (displayEnterUsernameScreen)
         {
@@ -746,7 +752,17 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
             {
                 fContainerRef.drawSingleString(displayWindow, GameFontStrings::HIGHSCORE_ACHIEVED);
             }
-            fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER_USER_SELECTION);
+
+            if(!windowClosePressed)
+            {
+                fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_OVER_USER_SELECTION);
+            }
+            else
+            {
+                MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
+                MetaFileHandler::saveMetaDataFileAndClose();
+                displayWindow.close();
+            }
         }
     }
     else if (isGamePaused)
@@ -938,7 +954,7 @@ void DisplayContainer::cleanDisplayContainer()
     }
 }
 
-void DisplayContainer::prepareHighscoreDisplaydata()
+void DisplayContainer::handleWindowCloseEvent()
 {
-    highScoreDisplayData = MetaFileHandler::getHighScoreDisplayString();
+    windowClosePressed = true;    
 }

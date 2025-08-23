@@ -47,10 +47,8 @@ int main ()
 
         while (displayWindow.pollEvent (event)) {
             if (event.type == sf::Event::Closed)
-            {
-                displayContainer.cleanDisplayContainer();
-                MetaFileHandler::saveMetaDataFileAndClose();
-                displayWindow.close ();
+            {                                
+                displayContainer.handleWindowCloseEvent();
             }
         }
         if (sf::Keyboard::isKeyPressed (sf::Keyboard::Space)) {

@@ -41,7 +41,7 @@ static const std::unordered_map<GameFontStrings, std::string> fontKeyToStrings{
     {GameFontStrings::HIGH_SCORE_BOARD_STRING, "High Score Board"},
     {GameFontStrings::HIGH_SCORE_VALUES, ""},
     {GameFontStrings::STAGE_COMPLETE_MESSAGE, ""},
-    {GameFontStrings::GAME_COMPLETE_MESSAGE, "Congratulations!! \n GAME COMPLETE!! \n Now go outside and play!!"}
+    {GameFontStrings::GAME_COMPLETE_MESSAGE, "Congratulations!! \n GAME COMPLETE!! \n Now go outside and play!!"},
 };
 
 static const std::unordered_map<GameFontStrings, sf::Vector2f> stringToLocation{
@@ -61,7 +61,7 @@ static const std::unordered_map<GameFontStrings, sf::Vector2f> stringToLocation{
     {GameFontStrings::HIGH_SCORE_BOARD_STRING, {DRAW_WINDOW_WIDTH + 10, 250}},
     {GameFontStrings::HIGH_SCORE_VALUES, {DRAW_WINDOW_WIDTH + 10, 285}},
     {GameFontStrings::STAGE_COMPLETE_MESSAGE, {250,200}},
-    {GameFontStrings::GAME_COMPLETE_MESSAGE, {250,200}}
+    {GameFontStrings::GAME_COMPLETE_MESSAGE, {250,200}},
 };
 
 class FontContainer

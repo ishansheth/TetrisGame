@@ -10,6 +10,7 @@ class BombShape : public BaseShape
 
     sf::RectangleShape *rectangle5;
     bool isMoving;
+    std::vector<sf::RectangleShape **> shapeContainer;
 
   public:
     BombShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(100, 250, 50)),
@@ -49,7 +50,9 @@ class BombShape : public BaseShape
     {
         // set the velocity vector
         if (rectangle5 != nullptr)
+        {
             displayWindow.draw(*rectangle5);
+        }
     }
 
     virtual void handleKey(const sf::Keyboard::Key &k) override
