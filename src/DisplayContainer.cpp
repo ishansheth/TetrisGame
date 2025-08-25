@@ -108,7 +108,7 @@ int DisplayContainer::getLowestYVal(const unsigned int searchX, const unsigned i
     {
         auto searchPtr = std::find_if(iteratorPtr->second.begin(), iteratorPtr->second.end(),
                                       [&searchX](std::pair<sf::RectangleShape **, IShape *> &element) {
-                                          return (abs((*(element.first))->getPosition().x - searchX) < 2);
+                                          return (static_cast<unsigned int>(abs((*(element.first))->getPosition().x - searchX)) < 2);
                                       });
         if (searchPtr != iteratorPtr->second.end())
         {
