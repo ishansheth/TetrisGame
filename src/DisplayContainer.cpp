@@ -84,15 +84,13 @@ bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const I
 
             if (
                 //                    bottom >= top
-                shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
-                    (*t2.first)->getPosition().y - SQUARE_OUTLINE_THICKNESS &&
+                ((shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS) >= (*t2.first)->getPosition().y) &&
                 //                    top <= bottom
-                shapePosition.y <= (*t2.first)->getPosition().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+                (shapePosition.y <= ((*t2.first)->getPosition().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS)) &&
                 //                    left <= right
-                shapePosition.x <= (*t2.first)->getPosition().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+                (shapePosition.x <= ((*t2.first)->getPosition().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS)) &&
                 //                    right >= left
-                shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >= (*t2.first)->getPosition().x)
-
+                (shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS) >= (*t2.first)->getPosition().x)
             {
                 return true;
             }
@@ -108,12 +106,11 @@ int DisplayContainer::getLowestYVal(const unsigned int searchX, const unsigned i
     {
         auto searchPtr = std::find_if(iteratorPtr->second.begin(), iteratorPtr->second.end(),
                                       [&searchX](std::pair<sf::RectangleShape **, IShape *> &element) {
-                                          return (abs((*(element.first))->getPosition().x - searchX) < 2);
+                                          return (static_cast<unsigned int>(abs((*(element.first))->getPosition().x - searchX)) <= 3);
                                       });
         if (searchPtr != iteratorPtr->second.end())
         {
-            iteratorPtr--;
-            return iteratorPtr->first;
+            return std::prev(iteratorPtr)->first;
         }
     }
     return rowYCoordinate.front();
@@ -460,8 +457,9 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
             {
                 auto xval = (*(e.first))->getPosition().x;
                 auto p1 = (*(e.first))->getPosition() + fallVelocity;
-
-                if ((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval, removedRow))
+                auto lowestPossibleY = getLowestYVal(xval, removedRow);
+                
+                if ((e.second)->isShapeBroken() && p1.y <= lowestPossibleY)
                 {
                     (*(e.first))->move(fallVelocity);
                     wasShapeMoved = true;

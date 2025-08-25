@@ -29,8 +29,8 @@ static constexpr unsigned int LAST_ROW_Y = DRAW_WINDOW_HEIGHT - SQUARE_SIDE_LENG
 
 static constexpr unsigned int NUMBER_OF_STAGE_IN_GAME = 3;
 
-static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {4, 5, 6};
-static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.4f, 0.7f, 1.f};
+static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {5, 5, 6};
+static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.5f, 0.7f, 1.f};
 
 ///////////////////////////////////////////////////// Font related const
 ///////////////////////////////////////////////////

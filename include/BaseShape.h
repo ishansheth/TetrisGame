@@ -199,8 +199,15 @@ class BaseShape : public IShape
             vec1.x = static_cast<int>(-vec1.y);
             vec1.y = static_cast<int>(temp);
             vec1 += shapeCenter;
-            if (isWithinDrawWindow(vec1) && isWithinDrawWindow(vec2) && isWithinDrawWindow(vec3) &&
-                isWithinDrawWindow(vec4))
+            if (isWithinDrawWindow(vec1) && 
+                isWithinDrawWindow(vec2) && 
+                isWithinDrawWindow(vec3) &&
+                isWithinDrawWindow(vec4) && 
+                !dContainer->isIntersecting(vec1, this) && 
+                !dContainer->isIntersecting(vec2, this) &&
+                !dContainer->isIntersecting(vec3, this) && 
+                !dContainer->isIntersecting(vec4, this)
+            )
             {
                 rectangle1->setPosition(vec1);
                 rectangle2->setPosition(vec2);
