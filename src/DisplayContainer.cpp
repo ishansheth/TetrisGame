@@ -99,14 +99,14 @@ bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const I
     return false;
 }
 
-int DisplayContainer::getLowestYVal(const unsigned int searchX, const unsigned int refY)
+int DisplayContainer::getLowestYVal(const float searchX, const float refY)
 {
     auto iteratorPtr = individualComponentContainer.find(refY);
     for (; iteratorPtr != individualComponentContainer.end(); iteratorPtr++)
     {
         auto searchPtr = std::find_if(iteratorPtr->second.begin(), iteratorPtr->second.end(),
                                       [&searchX](std::pair<sf::RectangleShape **, IShape *> &element) {
-                                          return (static_cast<unsigned int>(abs((*(element.first))->getPosition().x - searchX)) <= 3);
+                                          return (std::fabs((*(element.first))->getPosition().x - searchX) <= 3.f);
                                       });
         if (searchPtr != iteratorPtr->second.end())
         {

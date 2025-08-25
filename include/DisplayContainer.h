@@ -81,7 +81,7 @@ class DisplayContainer
     uint32_t currentscore;
     std::string highScoreDisplayData;
     
-    int getLowestYVal(const unsigned int x, const unsigned int refY);
+    int getLowestYVal(const float x, const float refY);
 
     void shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal);
 
