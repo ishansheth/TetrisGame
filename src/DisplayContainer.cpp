@@ -123,9 +123,9 @@ int DisplayContainer::getAllowedYVal(const float yCoordinate)
 
     for (std::size_t i = 0; i < rowYCoordinate.size(); i++)
     {
-        if (abs(rowYCoordinate[i] - yCoordinate) < minDiff)
+        if (static_cast<unsigned int>(abs(rowYCoordinate[i] - yCoordinate)) < minDiff)
         {
-            minDiff = abs(rowYCoordinate[i] - yCoordinate);
+            minDiff = static_cast<unsigned int>(abs(rowYCoordinate[i] - yCoordinate));
             minIdx = i;
         }
     }
@@ -356,6 +356,8 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
             for (auto &s : lastShape->getShapeContainer())
             {
                 auto yVal = getAllowedYVal((*s)->getPosition().y);
+                auto xVal = (*s)->getPosition().x;
+                (*s)->setPosition(sf::Vector2f(xVal,yVal));
                 individualComponentContainer[yVal].push_back(std::make_pair(s, lastShape));
             }
             shapeSettleSound.play();
@@ -487,6 +489,8 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
         if (shapeInterface->isShapeBroken())
         {
             const auto ypos = getAllowedYVal((*(e.first))->getPosition().y);
+            const auto xpos = (*e.first)->getPosition().x;
+            (*e.first)->setPosition(sf::Vector2f(xpos,ypos));
             individualComponentContainer[ypos].push_back(std::make_pair(e.first, e.second));
         }
         else
@@ -501,6 +505,9 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
                     for (auto &s : squares)
                     {
                         const auto yval = getAllowedYVal((*s)->getPosition().y);
+                        const auto xval = (*s)->getPosition().x;
+                        (*s)->setPosition(sf::Vector2f(xval,yval));
+
                         individualComponentContainer[yval].push_back(std::make_pair(s, shapeInterface));
                     }
                 }
@@ -522,7 +529,7 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
                     std::remove_if(individualComponentContainer[originalY].begin(),
                                    individualComponentContainer[originalY].end(),
                                    [&count, &x1](std::pair<sf::RectangleShape **, IShape *> &element) {
-                                       if ((static_cast<int>(abs((*(element.first))->getPosition().x - x1)) < 2) &&
+                                       if ((std::fabs((*(element.first))->getPosition().x - x1) < 2.f) &&
                                            !element.second->isShapeBroken() && count == 0)
                                        {
                                            count++;
