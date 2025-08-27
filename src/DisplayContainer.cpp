@@ -166,7 +166,7 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
 
     drawDisplayContainer(displayWindow);
 
-    if(insertRowsAtbottom)
+    if(insertRowsAtbottom && !isGamePaused)
     {
         auto timeElapsed = rowInsertionTimer.restart();
         oneMinTime -= timeElapsed;
@@ -179,6 +179,7 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
     }
 }
 
+// raise the mud from bottom which means insert rows of single squares with brown color
 void DisplayContainer::insertRowAtBottom()
 {
     // shift whole structre up by one row
@@ -301,6 +302,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
                     auto x = static_cast<int>((*(element.first))->getPosition().x);
                     if (x >= minx && x <= maxx)
                     {
+                        (element.second)->setBroken();
                         delete *(element.first);
                         *(element.first) = nullptr;
                     }

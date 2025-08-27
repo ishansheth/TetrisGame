@@ -146,7 +146,7 @@ std::string MetaFileHandler::getHighScoreDisplayString()
         for (auto &[score, username] : savedHighScoreData)
         {
             highScoreDisplayData += username;
-            highScoreDisplayData += ":";
+            highScoreDisplayData += " : ";
             highScoreDisplayData += std::to_string(score);
             highScoreDisplayData += "\n";
         }
