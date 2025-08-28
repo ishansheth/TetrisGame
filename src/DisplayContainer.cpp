@@ -134,6 +134,12 @@ int DisplayContainer::getAllowedYVal(const float yCoordinate)
 
 void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
 {
+    if (lastShape->isBomb() && key == sf::Keyboard::Space)
+    {
+        // terminate bomb before it hits bottom
+        terminateBomb = true;
+    }
+
     if (lastShape)
     {
         lastShape->handleKey(key);
@@ -235,6 +241,43 @@ void DisplayContainer::insertRowAtBottom()
     for(auto& element : newRowAtBottom)
     {
         std::prev(individualComponentContainer.end())->second.push_back(element);
+    }
+}
+
+void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
+{
+    auto ypos = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().y);
+    unsigned int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x);
+    unsigned int maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, ypos));
+
+    // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
+    // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
+    unsigned int count = 4000 / 100;
+
+    bool blocksRemoved = false;
+
+    bombExplosionSound.play();
+
+    while (count > 0)
+    {
+        displayWindow.clear(sf::Color::Black);
+
+        prepareDefaultScreenItems(displayWindow);
+
+        bombExplosionParticles.update();
+
+        displayWindow.draw(bombExplosionParticles);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        drawDisplayContainer(displayWindow);
+
+        displayWindow.display();
+
+        count--;
+
     }
 }
 
@@ -342,6 +385,15 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
     {
         return;
     }
+
+    if (lastShape->isBomb() && terminateBomb)
+    {
+        terminateBombEarly(displayWindow);
+        terminateBomb = false;
+        lastShape = nullptr;
+        return;
+    }
+
 
     auto moveStatus = lastShape->getMoveStatus();
     if (!moveStatus)

@@ -76,12 +76,15 @@ class DisplayContainer
     bool insertRowsAtbottom;
     bool gameComplete;
     bool windowClosePressed;
-    
+    bool terminateBomb;
+
     std::string highScoreUsername;
     uint32_t currentscore;
     std::string highScoreDisplayData;
     
     int getLowestYVal(const float x, const float refY);
+
+    void terminateBombEarly(sf::RenderWindow &displayWindow);
 
     void shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal);
 

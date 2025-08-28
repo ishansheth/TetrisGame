@@ -99,6 +99,30 @@ class BaseShape : public IShape
     virtual void setBroken() override
     {
         isBroken = true;
+        if (rectangle1 != nullptr)
+        {
+            rectangle1->setFillColor(sf::Color(129, 133, 137));
+            rectangle1->setTexture(nullptr);
+        }
+
+        if (rectangle2 != nullptr)
+        {
+            rectangle2->setFillColor(sf::Color(129, 133, 137));
+            rectangle2->setTexture(nullptr);
+        }
+
+        if (rectangle3 != nullptr)
+        {
+            rectangle3->setFillColor(sf::Color(129, 133, 137));
+            rectangle3->setTexture(nullptr);
+        }
+
+        if (rectangle4 != nullptr)
+        {
+            rectangle4->setFillColor(sf::Color(129, 133, 137));
+            rectangle4->setTexture(nullptr);
+        }
+
     }
 
     virtual void drawShape(sf::RenderWindow &displayWindow) override
