@@ -134,6 +134,11 @@ int DisplayContainer::getAllowedYVal(const float yCoordinate)
 
 void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
 {
+    if(isGamePaused)
+    {
+        return;
+    }
+
     if (lastShape->isBomb() && key == sf::Keyboard::Space)
     {
         // terminate bomb before it hits bottom
@@ -342,8 +347,10 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 
                 for (auto &element : individualComponentContainer[rowY])
                 {
-                    auto x = static_cast<int>((*(element.first))->getPosition().x);
-                    if (x >= minx && x <= maxx)
+                    auto xpos = static_cast<int>((*(element.first))->getPosition().x);
+                    auto ypos = static_cast<int>((*(element.first))->getPosition().y);
+
+                    if (xpos >= minx && xpos <= maxx)
                     {
                         (element.second)->setBroken();
                         delete *(element.first);
