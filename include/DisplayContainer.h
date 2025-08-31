@@ -108,6 +108,8 @@ class DisplayContainer
 
     void showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow);
 
+    void makeRowFall(unsigned int sourceY, sf::RenderWindow &displayWindow);
+
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
 
@@ -128,8 +130,6 @@ class DisplayContainer
     void showCurrentStageScreen(sf::RenderWindow &displayWindow);
 
     void cleanDisplayContainer();
-
-    void makeRowFall(int sourceY, int removedRow, sf::RenderWindow &displayWindow);
 
     void prepareDefaultScreenItems(sf::RenderWindow &displayWindow);
 
