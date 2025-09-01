@@ -67,7 +67,8 @@ class DisplayContainer
     bool moveStatus;
     int scoreValue;
     unsigned int currentStageNumber;
-
+    unsigned int mudRowCount;
+    
     // state variables
     bool isGameOverState;
     bool isGamePaused;

@@ -113,7 +113,7 @@ int DisplayContainer::getLowestYVal(const float searchX, const float refY)
             return std::prev(iteratorPtr)->first;
         }
     }
-    return rowYCoordinate.front();
+    return rowYCoordinate.front() + mudRowCount;
 }
 
 int DisplayContainer::getAllowedYVal(const float yCoordinate)
@@ -139,13 +139,13 @@ void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
         return;
     }
 
-    if (lastShape->isBomb() && key == sf::Keyboard::Space)
+    if (lastShape != nullptr && lastShape->isBomb() && key == sf::Keyboard::Space)
     {
         // terminate bomb before it hits bottom
         terminateBomb = true;
     }
 
-    if (lastShape)
+    if (lastShape != nullptr)
     {
         lastShape->handleKey(key);
     }
@@ -247,6 +247,8 @@ void DisplayContainer::insertRowAtBottom()
     {
         std::prev(individualComponentContainer.end())->second.push_back(element);
     }
+    mudRowCount++;
+
 }
 
 void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
@@ -382,7 +384,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-        if(it->first <= 552)
+        if(it->first <= (552 - mudRowCount*SQUARE_SIDE_LENGTH_WITH_OUTLINE))
         {
             makeRowFall(it->first,displayWindow);
         }
@@ -679,7 +681,7 @@ void DisplayContainer::shiftStructureDownward(sf::RenderWindow &displayWindow, u
 
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-        if(it->first <= 552)
+        if(it->first <= (552 - mudRowCount*SQUARE_SIDE_LENGTH_WITH_OUTLINE))
         {
             makeRowFall(it->first,displayWindow);
         }
@@ -965,6 +967,7 @@ void DisplayContainer::resetGamePaused()
 void DisplayContainer::setParamtersForCurrentStage()
 {
     SHAPE_DOWN_FALL_SPEED_Y = FALL_SPEED_FOR_STAGE[currentStageNumber - 1];
+    insertRowsAtbottom = true;
 
     if (currentStageNumber == 1)
     {
