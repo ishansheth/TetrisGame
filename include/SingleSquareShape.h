@@ -31,6 +31,11 @@ class SingleSquare : public IShape
         shapeContainer.clear();
     }
 
+    virtual bool canShapeFall() override
+    {
+        return false;
+    }
+
     virtual bool isBomb() override
     {
         return false;

@@ -81,6 +81,11 @@ class BaseShape : public IShape
         shapeContainer.clear();
     }
 
+    virtual bool canShapeFall() override
+    {
+        return true;
+    }
+
     std::vector<sf::RectangleShape **> getShapeContainer() override
     {
         return shapeContainer;
