@@ -319,8 +319,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 
     // correct the elements which are pushed in this vector with better corner case consideration
     // and thinking how the bomb would drop and which rows would be affected
-    std::vector<unsigned int> removeFromRows;
-
+    unsigned int uppeMostRowYval = 0;
     for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
     {
         for (auto &element : it->second)
@@ -328,26 +327,28 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
             auto x = static_cast<int>((*(element.first))->getPosition().x);
             if (x >= minx && x <= maxx)
             {
-                removeFromRows.push_back(it->first);
+                uppeMostRowYval = it->first;
                 break;
             }
         }
 
-        if (removeFromRows.size() == NO_ROWS_DESTROYED_BY_BOMB)
+        if (uppeMostRowYval != 0)
+        {
             break;
+        }        
     }
 
-    if (removeFromRows.size() == 0)
+    if (uppeMostRowYval == 0)
     {
         return;
     }
 
-    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, removeFromRows[0]));
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, uppeMostRowYval));
 
     // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
     // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
     unsigned int count = 4000 / 100;
-
+    unsigned int removedRowCnt = 0;
     bool blocksRemoved = false;
 
     bombExplosionSound.play();
@@ -365,15 +366,15 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
         if (!blocksRemoved)
         {
             blocksRemoved = true;
-            for (auto &rowY : removeFromRows)
+            while(removedRowCnt <= NO_ROWS_DESTROYED_BY_BOMB && uppeMostRowYval <= LAST_ROW_Y)
             {
                 std::sort(
-                    individualComponentContainer[rowY].begin(), individualComponentContainer[rowY].end(),
+                    individualComponentContainer[uppeMostRowYval].begin(), individualComponentContainer[uppeMostRowYval].end(),
                     [](std::pair<sf::RectangleShape **, IShape *> &a, std::pair<sf::RectangleShape **, IShape *> &b) {
                         return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x;
                     });
 
-                for (auto &element : individualComponentContainer[rowY])
+                for (auto &element : individualComponentContainer[uppeMostRowYval])
                 {
                     auto xpos = static_cast<int>((*(element.first))->getPosition().x);
                     auto ypos = static_cast<int>((*(element.first))->getPosition().y);
@@ -386,16 +387,19 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
                     }
                 }
 
-                if (individualComponentContainer[rowY].size() > 0)
+                if (individualComponentContainer[uppeMostRowYval].size() > 0)
                 {
-                    individualComponentContainer[rowY].erase(
-                        std::remove_if(individualComponentContainer[rowY].begin(),
-                                       individualComponentContainer[rowY].end(),
+                    individualComponentContainer[uppeMostRowYval].erase(
+                        std::remove_if(individualComponentContainer[uppeMostRowYval].begin(),
+                                       individualComponentContainer[uppeMostRowYval].end(),
                                        [](std::pair<sf::RectangleShape **, IShape *> &element) {
                                            return (*(element.first) == nullptr);
                                        }),
-                        individualComponentContainer[rowY].end());
+                        individualComponentContainer[uppeMostRowYval].end());
                 }
+
+                uppeMostRowYval += SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+                removedRowCnt++;
             }
         }
 
@@ -412,7 +416,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
     // bomb drop
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-        if(it->first <= removeFromRows.back())
+        if(it->first <= uppeMostRowYval)
         {
             makeRowFall(it->first, displayWindow);
         }
