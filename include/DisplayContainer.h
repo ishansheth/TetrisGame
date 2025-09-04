@@ -38,8 +38,9 @@ static const sf::Vertex highscore_partition_line2[] = {sf::Vertex(sf::Vector2f(D
 
 class DisplayContainer
 {
+    std::vector<unsigned int> rowYCoordinate;
+    std::vector<unsigned int> rowXCoordinate;
 
-    std::vector<int> rowYCoordinate;
     std::map<int, std::vector<std::pair<sf::RectangleShape **, IShape *>>> individualComponentContainer;
     std::vector<int> yPositions;
 
@@ -97,6 +98,8 @@ class DisplayContainer
     bool isGameOver();
 
     int getAllowedYVal(const float yCoordinate);
+
+    int getAllowedXVal(const float xCoordinate);
 
     void moveShapes();
 

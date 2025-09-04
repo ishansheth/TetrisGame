@@ -16,11 +16,15 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
       windowClosePressed(false),oneMinTime(sf::seconds(60))
 {
     auto yVal = LAST_ROW_Y;
+    auto xval = SQUARE_OUTLINE_THICKNESS;
+
     for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
     {
         individualComponentContainer[yVal] = std::vector<std::pair<sf::RectangleShape **, IShape *>>();
         rowYCoordinate.push_back(yVal);
+        rowXCoordinate.push_back(xval);
         yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+        xval += SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
     if (!shapeSettleSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
@@ -132,6 +136,23 @@ int DisplayContainer::getAllowedYVal(const float yCoordinate)
     }
     return rowYCoordinate[minIdx];
 }
+
+int DisplayContainer::getAllowedXVal(const float xCoordinate)
+{
+    int minIdx = -1;
+    int minDiff = 1000;
+
+    for (std::size_t i = 0; i < rowXCoordinate.size(); i++)
+    {
+        if (static_cast<unsigned int>(abs(rowXCoordinate[i] - xCoordinate)) < minDiff)
+        {
+            minDiff = static_cast<unsigned int>(abs(rowXCoordinate[i] - xCoordinate));
+            minIdx = i;
+        }
+    }
+    return rowXCoordinate[minIdx];
+}
+
 
 void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
 {
@@ -294,8 +315,10 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
     {
         minx = 0;
     }
-    unsigned int maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
+    // correct the elements which are pushed in this vector with better corner case consideration
+    // and thinking how the bomb would drop and which rows would be affected
     std::vector<unsigned int> removeFromRows;
 
     for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
@@ -385,12 +408,11 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
         count--;
     }
 
-    const int bottomRowY = std::prev(individualComponentContainer.end())->first;
-    const int nextAboveBottom = bottomRowY - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-
+    // there should be more sophisticated mechanism to find out which whole and broken shape would fall after 
+    // bomb drop
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-        if(it->first <= nextAboveBottom)
+        if(it->first <= removeFromRows.back())
         {
             makeRowFall(it->first, displayWindow);
         }
@@ -434,7 +456,7 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
             for (auto &s : lastShape->getShapeContainer())
             {
                 auto yVal = getAllowedYVal((*s)->getPosition().y);
-                auto xVal = (*s)->getPosition().x;
+                auto xVal = getAllowedXVal((*s)->getPosition().x);
                 (*s)->setPosition(sf::Vector2f(xVal,yVal));
                 individualComponentContainer[yVal].push_back(std::make_pair(s, lastShape));
             }
@@ -505,9 +527,9 @@ void DisplayContainer::makeRowFall(unsigned int sourceY, sf::RenderWindow &displ
                 uniqueWholeShapes.insert((e.second));
                 for (auto &s : ((e.second))->getShapeContainer())
                 {
-                    auto xval = (*(s))->getPosition().x;
-                    auto yval = getAllowedYVal((*(s))->getPosition().y);
-                    wholeShapeXY[yval].push_back(xval);
+                    auto xVal = getAllowedXVal((*(s))->getPosition().x);
+                    auto yVal = getAllowedYVal((*(s))->getPosition().y);
+                    wholeShapeXY[yVal].push_back(xVal);
                 }
             }
         }
@@ -566,10 +588,10 @@ void DisplayContainer::makeRowFall(unsigned int sourceY, sf::RenderWindow &displ
         auto **rectangle = e.first;
         if (shapeInterface->isShapeBroken() && movedBrokenShapes.find(rectangle) != movedBrokenShapes.end())
         {
-            const auto ypos = getAllowedYVal((*(rectangle))->getPosition().y);
-            const auto xpos = (*rectangle)->getPosition().x;
-            (*rectangle)->setPosition(sf::Vector2f(xpos,ypos));
-            individualComponentContainer[ypos].push_back(std::make_pair(rectangle, shapeInterface));
+            const auto yVal = getAllowedYVal((*(rectangle))->getPosition().y);
+            const auto xVal = getAllowedXVal((*rectangle)->getPosition().x);
+            (*rectangle)->setPosition(sf::Vector2f(xVal,yVal));
+            individualComponentContainer[yVal].push_back(std::make_pair(rectangle, shapeInterface));
         }
         else if(!shapeInterface->isShapeBroken() && uniqueWholeShapes.find(shapeInterface) == uniqueWholeShapes.end())
         {
@@ -581,11 +603,10 @@ void DisplayContainer::makeRowFall(unsigned int sourceY, sf::RenderWindow &displ
                 auto squares = shapeInterface->getShapeContainer();
                 for (auto &s : squares)
                 {
-                    const auto yval = getAllowedYVal((*s)->getPosition().y);
-                    const auto xval = (*s)->getPosition().x;
-                    (*s)->setPosition(sf::Vector2f(xval,yval));
-
-                    individualComponentContainer[yval].push_back(std::make_pair(s, shapeInterface));
+                    const auto yVal = getAllowedYVal((*s)->getPosition().y);
+                    const auto xVal = getAllowedXVal((*s)->getPosition().x);
+                    (*s)->setPosition(sf::Vector2f(xVal,yVal));
+                    individualComponentContainer[yVal].push_back(std::make_pair(s, shapeInterface));
                 }
             }
         }
@@ -691,14 +712,13 @@ void DisplayContainer::shiftStructureDownward(sf::RenderWindow &displayWindow, u
     eraseCompletedRow(yVal, displayWindow);
     scoreValue += SCORE_PER_ROW;
 
-    const int bottomRowY = std::prev(individualComponentContainer.end())->first;
-    const int nextAboveBottom = bottomRowY - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    const int startPointYval = yVal - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
 
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-        if(it->first <= nextAboveBottom)
+        if(it->first <= startPointYval)
         {
-            makeRowFall(it->first,displayWindow);
+            makeRowFall(it->first, displayWindow);
         }
     }
 }
@@ -983,7 +1003,7 @@ void DisplayContainer::setParamtersForCurrentStage()
 {
     SHAPE_DOWN_FALL_SPEED_Y = FALL_SPEED_FOR_STAGE[currentStageNumber - 1];
     insertRowsAtbottom = true;
-
+ 
     if (currentStageNumber == 1)
     {
         shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);
