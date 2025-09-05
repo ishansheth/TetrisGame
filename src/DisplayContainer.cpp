@@ -366,7 +366,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
         if (!blocksRemoved)
         {
             blocksRemoved = true;
-            while(removedRowCnt <= NO_ROWS_DESTROYED_BY_BOMB && uppeMostRowYval <= LAST_ROW_Y)
+            while(removedRowCnt < NO_ROWS_DESTROYED_BY_BOMB && uppeMostRowYval <= LAST_ROW_Y)
             {
                 std::sort(
                     individualComponentContainer[uppeMostRowYval].begin(), individualComponentContainer[uppeMostRowYval].end(),
@@ -838,7 +838,6 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
                 {
                     displayEnterUsernameScreen = false;
                     highScoreAchieved = false;
-                    MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
                 }
             }
 
