@@ -97,9 +97,9 @@ class DisplayContainer
 
     bool isGameOver();
 
-    int getAllowedYVal(const float yCoordinate);
+    unsigned int getAllowedYVal(const float yCoordinate);
 
-    int getAllowedXVal(const float xCoordinate);
+    unsigned int getAllowedXVal(const float xCoordinate);
 
     void moveShapes();
 
@@ -112,6 +112,8 @@ class DisplayContainer
     void showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow);
 
     void makeRowFall(unsigned int sourceY, sf::RenderWindow &displayWindow);
+
+    void createBombDamage(std::set<IShape*> brokenShapes, sf::RenderWindow& displayWindow);
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
