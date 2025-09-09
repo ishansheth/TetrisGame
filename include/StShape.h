@@ -17,7 +17,7 @@ struct StShape : public BaseShape
     {
     }
 
-    virtual bool isBomb() override
+    virtual bool isBomb() const override
     {
         return false;
     }

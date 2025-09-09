@@ -85,23 +85,29 @@ bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const I
         for (auto &t2 : s.second)
         {
             if (t2.second == ignoreshape)
+            {
                 continue;
+            }
 
+            auto squareSide = ignoreshape->isBomb() ? BOMB_SQUARE_SIDE_LENGTH : (SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS);
             if (
                 //                    bottom >= top
-                ((shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS) >= (*t2.first)->getPosition().y) &&
+                ((shapePosition.y + squareSide) >= (*t2.first)->getPosition().y) &&
                 //                    top <= bottom
-                (shapePosition.y <= ((*t2.first)->getPosition().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS)) &&
+                (shapePosition.y <= ((*t2.first)->getPosition().y + squareSide)) &&
                 //                    left <= right
-                (shapePosition.x <= ((*t2.first)->getPosition().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS)) &&
+                (shapePosition.x <= ((*t2.first)->getPosition().x + squareSide)) &&
                 //                    right >= left
-                (shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS) >= (*t2.first)->getPosition().x)
+                (shapePosition.x + squareSide) >= (*t2.first)->getPosition().x)
             {
                 return true;
             }
+                
+
         }
     }
     return false;
+
 }
 
 
@@ -451,11 +457,6 @@ void DisplayContainer::createBombDamage(std::set<IShape*> brokenShapes, sf::Rend
 
         // get the upper row shapes touching the current row
         unsigned int upperYVal = it->first - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-        if(individualComponentContainer[upperYVal].size() == 0)
-        {
-            break;
-        }
-
 
         for(auto& element : it->second)
         {

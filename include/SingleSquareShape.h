@@ -31,12 +31,12 @@ class SingleSquare : public IShape
         shapeContainer.clear();
     }
 
-    virtual bool canShapeFall() override
+    virtual bool canShapeFall() const override
     {
         return false;
     }
 
-    virtual bool isBomb() override
+    virtual bool isBomb() const override
     {
         return false;
     }    
@@ -46,17 +46,17 @@ class SingleSquare : public IShape
         rectangle->setPosition(location);
     }
 
-    std::vector<sf::RectangleShape **> getShapeContainer() override
+    std::vector<sf::RectangleShape **> getShapeContainer() const override
     {
         return shapeContainer;
     }
 
-    virtual bool getMoveStatus() override
+    virtual bool getMoveStatus() const override
     {
         return false;
     }
 
-    virtual bool isShapeBroken() override
+    virtual bool isShapeBroken() const override
     {
         return true;
     }

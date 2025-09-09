@@ -26,12 +26,12 @@ class BombShape : public BaseShape
         shapeContainer.push_back(&rectangle5);
     }
 
-    virtual bool isBomb() override
+    virtual bool isBomb() const override
     {
         return true;
     }
 
-    std::vector<sf::RectangleShape **> getShapeContainer() override
+    std::vector<sf::RectangleShape **> getShapeContainer() const override
     {
         return shapeContainer;
     }
@@ -95,7 +95,7 @@ class BombShape : public BaseShape
 
     }
 
-    virtual bool getMoveStatus() override
+    virtual bool getMoveStatus() const override
     {
         return isMoving;
     }

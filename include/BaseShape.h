@@ -81,22 +81,22 @@ class BaseShape : public IShape
         shapeContainer.clear();
     }
 
-    virtual bool canShapeFall() override
+    virtual bool canShapeFall() const override
     {
         return true;
     }
 
-    std::vector<sf::RectangleShape **> getShapeContainer() override
+    std::vector<sf::RectangleShape **> getShapeContainer() const override
     {
         return shapeContainer;
     }
 
-    virtual bool getMoveStatus() override
+    virtual bool getMoveStatus() const override
     {
         return isMoving;
     }
 
-    virtual bool isShapeBroken() override
+    virtual bool isShapeBroken() const override
     {
         return isBroken;
     }
