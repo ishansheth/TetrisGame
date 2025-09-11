@@ -81,17 +81,22 @@ class BaseShape : public IShape
         shapeContainer.clear();
     }
 
-    std::vector<sf::RectangleShape **> getShapeContainer() override
+    virtual bool canShapeFall() const override
+    {
+        return true;
+    }
+
+    std::vector<sf::RectangleShape **> getShapeContainer() const override
     {
         return shapeContainer;
     }
 
-    virtual bool getMoveStatus() override
+    virtual bool getMoveStatus() const override
     {
         return isMoving;
     }
 
-    virtual bool isShapeBroken() override
+    virtual bool isShapeBroken() const override
     {
         return isBroken;
     }
@@ -99,6 +104,30 @@ class BaseShape : public IShape
     virtual void setBroken() override
     {
         isBroken = true;
+        if (rectangle1 != nullptr)
+        {
+            rectangle1->setFillColor(sf::Color(129, 133, 137));
+            rectangle1->setTexture(nullptr);
+        }
+
+        if (rectangle2 != nullptr)
+        {
+            rectangle2->setFillColor(sf::Color(129, 133, 137));
+            rectangle2->setTexture(nullptr);
+        }
+
+        if (rectangle3 != nullptr)
+        {
+            rectangle3->setFillColor(sf::Color(129, 133, 137));
+            rectangle3->setTexture(nullptr);
+        }
+
+        if (rectangle4 != nullptr)
+        {
+            rectangle4->setFillColor(sf::Color(129, 133, 137));
+            rectangle4->setTexture(nullptr);
+        }
+
     }
 
     virtual void drawShape(sf::RenderWindow &displayWindow) override
@@ -199,8 +228,15 @@ class BaseShape : public IShape
             vec1.x = static_cast<int>(-vec1.y);
             vec1.y = static_cast<int>(temp);
             vec1 += shapeCenter;
-            if (isWithinDrawWindow(vec1) && isWithinDrawWindow(vec2) && isWithinDrawWindow(vec3) &&
-                isWithinDrawWindow(vec4))
+            if (isWithinDrawWindow(vec1) && 
+                isWithinDrawWindow(vec2) && 
+                isWithinDrawWindow(vec3) &&
+                isWithinDrawWindow(vec4) && 
+                !dContainer->isIntersecting(vec1, this) && 
+                !dContainer->isIntersecting(vec2, this) &&
+                !dContainer->isIntersecting(vec3, this) && 
+                !dContainer->isIntersecting(vec4, this)
+            )
             {
                 rectangle1->setPosition(vec1);
                 rectangle2->setPosition(vec2);

@@ -38,8 +38,9 @@ static const sf::Vertex highscore_partition_line2[] = {sf::Vertex(sf::Vector2f(D
 
 class DisplayContainer
 {
+    std::vector<unsigned int> rowYCoordinate;
+    std::vector<unsigned int> rowXCoordinate;
 
-    std::vector<int> rowYCoordinate;
     std::map<int, std::vector<std::pair<sf::RectangleShape **, IShape *>>> individualComponentContainer;
     std::vector<int> yPositions;
 
@@ -67,7 +68,7 @@ class DisplayContainer
     bool moveStatus;
     int scoreValue;
     unsigned int currentStageNumber;
-
+    
     // state variables
     bool isGameOverState;
     bool isGamePaused;
@@ -76,12 +77,15 @@ class DisplayContainer
     bool insertRowsAtbottom;
     bool gameComplete;
     bool windowClosePressed;
-    
+    bool terminateBomb;
+
     std::string highScoreUsername;
     uint32_t currentscore;
     std::string highScoreDisplayData;
     
-    int getLowestYVal(const unsigned int x, const unsigned int refY);
+    int getLowestYVal(const float x, const float refY);
+
+    void terminateBombEarly(sf::RenderWindow &displayWindow);
 
     void shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal);
 
@@ -93,7 +97,9 @@ class DisplayContainer
 
     bool isGameOver();
 
-    int getAllowedYVal(const float yCoordinate);
+    unsigned int getAllowedYVal(const float yCoordinate);
+
+    unsigned int getAllowedXVal(const float xCoordinate);
 
     void moveShapes();
 
@@ -104,6 +110,10 @@ class DisplayContainer
     void insertRowAtBottom();
 
     void showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow);
+
+    void makeRowFall(unsigned int sourceY, sf::RenderWindow &displayWindow);
+
+    void createBombDamage(std::set<IShape*> brokenShapes, sf::RenderWindow& displayWindow);
 
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
@@ -125,8 +135,6 @@ class DisplayContainer
     void showCurrentStageScreen(sf::RenderWindow &displayWindow);
 
     void cleanDisplayContainer();
-
-    void makeRowFall(int sourceY, int removedRow, sf::RenderWindow &displayWindow);
 
     void prepareDefaultScreenItems(sf::RenderWindow &displayWindow);
 

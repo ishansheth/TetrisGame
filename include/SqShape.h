@@ -22,7 +22,7 @@ struct SqShape : public BaseShape
     {
     }
 
-    virtual bool isBomb() override
+    virtual bool isBomb() const override
     {
         return false;
     }

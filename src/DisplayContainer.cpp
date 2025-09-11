@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <thread>
 #include <string.h>
+#include <deque>
 #include "MetaFileHandler.h"
 
 float SHAPE_DOWN_FALL_SPEED_Y = 0.1;
@@ -16,11 +17,15 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
       windowClosePressed(false),oneMinTime(sf::seconds(60))
 {
     auto yVal = LAST_ROW_Y;
+    auto xval = SQUARE_OUTLINE_THICKNESS;
+
     for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
     {
         individualComponentContainer[yVal] = std::vector<std::pair<sf::RectangleShape **, IShape *>>();
         rowYCoordinate.push_back(yVal);
+        rowXCoordinate.push_back(xval);
         yVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+        xval += SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
     if (!shapeSettleSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
@@ -80,64 +85,96 @@ bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const I
         for (auto &t2 : s.second)
         {
             if (t2.second == ignoreshape)
+            {
                 continue;
+            }
 
+            auto squareSide = ignoreshape->isBomb() ? BOMB_SQUARE_SIDE_LENGTH : (SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS);
             if (
                 //                    bottom >= top
-                shapePosition.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >=
-                    (*t2.first)->getPosition().y - SQUARE_OUTLINE_THICKNESS &&
+                ((shapePosition.y + squareSide) >= (*t2.first)->getPosition().y) &&
                 //                    top <= bottom
-                shapePosition.y <= (*t2.first)->getPosition().y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+                (shapePosition.y <= ((*t2.first)->getPosition().y + squareSide)) &&
                 //                    left <= right
-                shapePosition.x <= (*t2.first)->getPosition().x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS &&
+                (shapePosition.x <= ((*t2.first)->getPosition().x + squareSide)) &&
                 //                    right >= left
-                shapePosition.x + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS >= (*t2.first)->getPosition().x)
-
+                (shapePosition.x + squareSide) >= (*t2.first)->getPosition().x)
             {
                 return true;
             }
+                
+
         }
     }
     return false;
+
 }
 
-int DisplayContainer::getLowestYVal(const unsigned int searchX, const unsigned int refY)
+
+int DisplayContainer::getLowestYVal(const float searchX, const float refY)
 {
     auto iteratorPtr = individualComponentContainer.find(refY);
     for (; iteratorPtr != individualComponentContainer.end(); iteratorPtr++)
     {
         auto searchPtr = std::find_if(iteratorPtr->second.begin(), iteratorPtr->second.end(),
                                       [&searchX](std::pair<sf::RectangleShape **, IShape *> &element) {
-                                          return (abs((*(element.first))->getPosition().x - searchX) < 2);
+                                          return (std::fabs((*(element.first))->getPosition().x - searchX) <= 3.f);
                                       });
         if (searchPtr != iteratorPtr->second.end())
         {
-            iteratorPtr--;
-            return iteratorPtr->first;
+            return std::prev(iteratorPtr)->first;
         }
     }
-    return rowYCoordinate.front();
+    return rowYCoordinate[0];
 }
 
-int DisplayContainer::getAllowedYVal(const float yCoordinate)
+unsigned int DisplayContainer::getAllowedYVal(const float yCoordinate)
 {
     int minIdx = -1;
     int minDiff = 1000;
 
     for (std::size_t i = 0; i < rowYCoordinate.size(); i++)
     {
-        if (abs(rowYCoordinate[i] - yCoordinate) < minDiff)
+        if (static_cast<unsigned int>(abs(rowYCoordinate[i] - yCoordinate)) < minDiff)
         {
-            minDiff = abs(rowYCoordinate[i] - yCoordinate);
+            minDiff = static_cast<unsigned int>(abs(rowYCoordinate[i] - yCoordinate));
             minIdx = i;
         }
     }
     return rowYCoordinate[minIdx];
 }
 
+unsigned int DisplayContainer::getAllowedXVal(const float xCoordinate)
+{
+    int minIdx = -1;
+    int minDiff = 1000;
+
+    for (std::size_t i = 0; i < rowXCoordinate.size(); i++)
+    {
+        if (static_cast<unsigned int>(abs(rowXCoordinate[i] - xCoordinate)) < minDiff)
+        {
+            minDiff = static_cast<unsigned int>(abs(rowXCoordinate[i] - xCoordinate));
+            minIdx = i;
+        }
+    }
+    return rowXCoordinate[minIdx];
+}
+
+
 void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
 {
-    if (lastShape)
+    if(isGamePaused)
+    {
+        return;
+    }
+
+    if (lastShape != nullptr && lastShape->isBomb() && key == sf::Keyboard::Space)
+    {
+        // terminate bomb before it hits bottom
+        terminateBomb = true;
+    }
+
+    if (lastShape != nullptr)
     {
         lastShape->handleKey(key);
     }
@@ -169,7 +206,7 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
 
     drawDisplayContainer(displayWindow);
 
-    if(insertRowsAtbottom)
+    if(insertRowsAtbottom && !isGamePaused)
     {
         auto timeElapsed = rowInsertionTimer.restart();
         oneMinTime -= timeElapsed;
@@ -182,6 +219,7 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
     }
 }
 
+// raise the mud from bottom which means insert rows of single squares with brown color
 void DisplayContainer::insertRowAtBottom()
 {
     // shift whole structre up by one row
@@ -240,35 +278,13 @@ void DisplayContainer::insertRowAtBottom()
     }
 }
 
-void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
+void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
 {
-    unsigned int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x);
-    unsigned int maxx = minx + (3 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+    const float ypos = (*(lastShape->getShapeContainer()[0]))->getPosition().y;
+    const float minx = (*(lastShape->getShapeContainer()[0]))->getPosition().x;
+    const float maxx = minx + (3.f * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
-    std::vector<unsigned int> removeFromRows;
-
-    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
-    {
-        for (auto &element : it->second)
-        {
-            auto x = static_cast<int>((*(element.first))->getPosition().x);
-            if (x >= minx && x <= maxx)
-            {
-                removeFromRows.push_back(it->first);
-                break;
-            }
-        }
-
-        if (removeFromRows.size() == NO_ROWS_DESTROYED_BY_BOMB)
-            break;
-    }
-
-    if (removeFromRows.size() == 0)
-    {
-        return;
-    }
-
-    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, removeFromRows[0]));
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) * 0.5f, ypos));
 
     // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
     // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
@@ -288,37 +304,113 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 
         displayWindow.draw(bombExplosionParticles);
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+        drawDisplayContainer(displayWindow);
+
+        displayWindow.display();
+
+        count--;
+
+    }
+}
+
+void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
+{
+    int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    if(minx < 0)
+    {
+        minx = 0;
+    }
+    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+
+    // correct the elements which are pushed in this vector with better corner case consideration
+    // and thinking how the bomb would drop and which rows would be affected
+    unsigned int upperMostRowYval = 0;
+    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+    {
+        for (auto &element : it->second)
+        {
+            auto x = static_cast<int>((*(element.first))->getPosition().x);
+            if (x >= minx && x <= maxx)
+            {
+                upperMostRowYval = it->first;
+                break;
+            }
+        }
+
+        if (upperMostRowYval != 0)
+        {
+            break;
+        }        
+    }
+
+    if (upperMostRowYval == 0)
+    {
+        return;
+    }
+
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, upperMostRowYval));
+
+    // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
+    // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
+    unsigned int count = 4000 / 100;
+    unsigned int removedRowCnt = 0;
+    std::set<IShape*> brokenShapes;
+    bool blocksRemoved = false;
+
+    bombExplosionSound.play();
+
+    while (count > 0)
+    {
+        displayWindow.clear(sf::Color::Black);
+
+        prepareDefaultScreenItems(displayWindow);
+
+        bombExplosionParticles.update();
+
+        displayWindow.draw(bombExplosionParticles);
+
         if (!blocksRemoved)
         {
             blocksRemoved = true;
-            for (auto &rowY : removeFromRows)
+            while(removedRowCnt < NO_ROWS_DESTROYED_BY_BOMB && upperMostRowYval <= LAST_ROW_Y)            
             {
-                std::sort(
-                    individualComponentContainer[rowY].begin(), individualComponentContainer[rowY].end(),
-                    [](std::pair<sf::RectangleShape **, IShape *> &a, std::pair<sf::RectangleShape **, IShape *> &b) {
-                        return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x;
-                    });
+                 std::sort(
+                     individualComponentContainer[upperMostRowYval].begin(), 
+                     individualComponentContainer[upperMostRowYval].end(),
+                     [](std::pair<sf::RectangleShape **, IShape *> &a, std::pair<sf::RectangleShape **, IShape *> &b) {
+                         return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x;
+                     });
 
-                for (auto &element : individualComponentContainer[rowY])
+                for (auto &element : individualComponentContainer[upperMostRowYval])
                 {
-                    auto x = static_cast<int>((*(element.first))->getPosition().x);
-                    if (x >= minx && x <= maxx)
+                    auto xpos = static_cast<int>((*(element.first))->getPosition().x);
+                    auto ypos = static_cast<int>((*(element.first))->getPosition().y);
+
+                    if (xpos >= minx && xpos <= maxx)
                     {
                         delete *(element.first);
                         *(element.first) = nullptr;
+                        auto* shapeInterface = element.second;
+                        shapeInterface->setBroken();
+                        brokenShapes.insert(shapeInterface);
                     }
                 }
 
-                if (individualComponentContainer[rowY].size() > 0)
+                if (individualComponentContainer[upperMostRowYval].size() > 0)
                 {
-                    individualComponentContainer[rowY].erase(
-                        std::remove_if(individualComponentContainer[rowY].begin(),
-                                       individualComponentContainer[rowY].end(),
+                    individualComponentContainer[upperMostRowYval].erase(
+                        std::remove_if(individualComponentContainer[upperMostRowYval].begin(),
+                                       individualComponentContainer[upperMostRowYval].end(),
                                        [](std::pair<sf::RectangleShape **, IShape *> &element) {
                                            return (*(element.first) == nullptr);
                                        }),
-                        individualComponentContainer[rowY].end());
+                        individualComponentContainer[upperMostRowYval].end());
                 }
+
+                upperMostRowYval += SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+                removedRowCnt++;
             }
         }
 
@@ -330,6 +422,269 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 
         count--;
     }
+
+    createBombDamage(brokenShapes, displayWindow);
+
+}
+
+
+void DisplayContainer::createBombDamage(std::set<IShape*> brokenShapes, sf::RenderWindow& displayWindow)
+{
+    std::map<int, std::vector<std::pair<sf::RectangleShape **, IShape *>>> fallingShapeContainer;
+
+    std::unordered_map<int, std::vector<int>> wholeShapeXY;
+    std::set<IShape *> movedWholeShapes;
+    std::set<IShape *> uniqueWholeShapes;
+    std::set<sf::RectangleShape **> movedBrokenShapes;    
+
+    const sf::Vector2f fallVelocity = {SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y};
+
+    for(auto& shape : brokenShapes)
+    {
+        for(auto& square : shape->getShapeContainer())
+        {
+            if(*square != nullptr)
+            {
+                auto yval = getAllowedYVal((*(square))->getPosition().y);
+                fallingShapeContainer[yval].push_back(std::make_pair(square,shape));
+            }
+        }
+    }
+
+    for(auto it = fallingShapeContainer.rbegin(); it != fallingShapeContainer.rend(); it++)      
+    {
+        std::set<IShape*> upperRowShapes;
+
+        // get the upper row shapes touching the current row
+        unsigned int upperYVal = it->first - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+
+        for(auto& element : it->second)
+        {
+            unsigned int xVal = getAllowedXVal((*(element.first))->getPosition().x);
+            if(fallingShapeContainer.count(upperYVal) > 0)
+            {
+                auto searchPtr1 = std::find_if(individualComponentContainer[upperYVal].begin(),
+                    individualComponentContainer[upperYVal].end(),
+                    [xVal](auto& element)
+                    {
+                        return (std::fabs((*(element.first))->getPosition().x - xVal) < 2.f);
+                    });             
+                
+                auto searchPtr2 = std::find_if(fallingShapeContainer[upperYVal].begin(),
+                    fallingShapeContainer[upperYVal].end(),
+                    [xVal](auto& element)
+                    {
+                        return (std::fabs((*(element.first))->getPosition().x - xVal) < 2.f);
+                    });             
+                
+                if(searchPtr1 != individualComponentContainer[upperYVal].end() &&
+                    searchPtr2 != fallingShapeContainer[upperYVal].end() &&
+                    searchPtr1->second != searchPtr2->second)
+                {
+                    if((searchPtr1->second)->isShapeBroken())
+                    {
+                        fallingShapeContainer[upperYVal].push_back(std::make_pair(searchPtr1->first, searchPtr1->second));
+                    }
+                    else
+                    {
+                        if(upperRowShapes.find(searchPtr1->second) == upperRowShapes.end())
+                        {
+                            upperRowShapes.insert(searchPtr1->second);
+                            for(auto& square : (searchPtr1->second)->getShapeContainer())
+                            {
+                                fallingShapeContainer[upperYVal].push_back(std::make_pair(square, searchPtr1->second));
+                            }
+                        }
+                    }
+
+                }
+
+            }
+            else if(individualComponentContainer.count(upperYVal) > 0)
+            {
+                for(auto& element : individualComponentContainer[upperYVal])
+                {
+                    fallingShapeContainer[upperYVal].push_back(element);
+                }
+
+            }
+
+        }
+    }
+    
+
+    for(auto it = fallingShapeContainer.rbegin(); it != fallingShapeContainer.rend(); it++)                
+    {
+        wholeShapeXY.clear();
+        movedWholeShapes.clear();
+        uniqueWholeShapes.clear();
+        movedBrokenShapes.clear();
+
+        for (auto &e : it->second)
+        {
+            if (!(e.second)->isShapeBroken())
+            {
+                if (uniqueWholeShapes.find((e.second)) == uniqueWholeShapes.end())
+                {
+                    uniqueWholeShapes.insert((e.second));
+                    for (auto &s : ((e.second))->getShapeContainer())
+                    {
+                        auto xVal = getAllowedXVal((*(s))->getPosition().x);
+                        auto yVal = getAllowedYVal((*(s))->getPosition().y);
+                        wholeShapeXY[yVal].push_back(xVal);
+                    }
+                }
+
+            }
+        }
+        uniqueWholeShapes.clear();
+
+        bool wasShapeMoved = true;
+        bool wasBrokenShapeMoved = false;
+        bool wholeShapeMoved = false;
+
+
+        while(wasShapeMoved)
+        {
+            wasShapeMoved = false;
+
+            displayWindow.clear(sf::Color::Black);
+
+            prepareDefaultScreenItems(displayWindow);
+
+            for(auto& element : it->second)
+            {
+                if(!(element.second)->canShapeFall())
+                {
+                    continue;
+                }
+
+                unsigned int xVal = getAllowedXVal((*(element.first))->getPosition().x);
+                
+                auto p1 = (*(element.first))->getPosition() + fallVelocity;
+                auto lowestPossibleY = getLowestYVal(xVal, it->first+SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+                
+                if ((element.second)->isShapeBroken() && p1.y <= lowestPossibleY)
+                {
+                    (*(element.first))->move(fallVelocity);
+                    movedBrokenShapes.insert((element.first));
+                    wasShapeMoved = true;
+                    wasBrokenShapeMoved = true;
+                }
+                else if ((element.second)->moveShape())
+                {
+                    wasShapeMoved = true;
+                    wholeShapeMoved = true;
+                    movedWholeShapes.insert((element.second));
+                }
+            }
+
+            drawDisplayContainer(displayWindow);
+
+            displayWindow.display();
+
+        }
+
+
+        for (auto &e : it->second)
+        {
+            auto *shapeInterface = e.second;
+            auto **square = e.first;
+            if (shapeInterface->isShapeBroken() && movedBrokenShapes.find(square) != movedBrokenShapes.end())
+            {
+                const auto yVal = getAllowedYVal((*(square))->getPosition().y);
+                const auto xVal = getAllowedXVal((*square)->getPosition().x);
+                (*square)->setPosition(sf::Vector2f(xVal,yVal));
+                individualComponentContainer[yVal].push_back(std::make_pair(square, shapeInterface));
+            }
+            else if(!shapeInterface->isShapeBroken() && uniqueWholeShapes.find(shapeInterface) == uniqueWholeShapes.end())
+            {
+                // the shape was moved because found in set
+                if (movedWholeShapes.find(shapeInterface) != movedWholeShapes.end())
+                {
+                    uniqueWholeShapes.insert(shapeInterface);
+
+                    auto squares = shapeInterface->getShapeContainer();
+                    for (auto &s : squares)
+                    {
+                        const auto yVal = getAllowedYVal((*s)->getPosition().y);
+                        const auto xVal = getAllowedXVal((*s)->getPosition().x);
+                        (*s)->setPosition(sf::Vector2f(xVal,yVal));
+                        individualComponentContainer[yVal].push_back(std::make_pair(s, shapeInterface));
+                    }
+                }
+            }
+        }
+
+        if (wholeShapeMoved)
+        {
+            for (const auto &[originalY, originalXs] : wholeShapeXY)
+            {
+                for (auto &x1 : originalXs)
+                {
+                    unsigned int count = 0;
+                    individualComponentContainer[originalY].erase(
+                        std::remove_if(individualComponentContainer[originalY].begin(),
+                                    individualComponentContainer[originalY].end(),
+                                    [&count, &x1, movedWholeShapes](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                        if ((std::fabs((*(element.first))->getPosition().x - x1) < 2.f) &&
+                                            !element.second->isShapeBroken() && 
+                                            count == 0 && 
+                                            movedWholeShapes.find(element.second) != movedWholeShapes.end())
+                                        {
+                                            count++;
+                                            return true;
+                                        }
+                                        else
+                                        {
+                                            return false;
+                                        }
+                                    }),
+                        individualComponentContainer[originalY].end());
+
+                        count = 0;
+                        fallingShapeContainer[originalY].erase(
+                            std::remove_if(fallingShapeContainer[originalY].begin(),
+                                        fallingShapeContainer[originalY].end(),
+                                        [&count, &x1, movedWholeShapes](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                            if ((std::fabs((*(element.first))->getPosition().x - x1) < 2.f) &&
+                                                !element.second->isShapeBroken() && 
+                                                count == 0 && 
+                                                movedWholeShapes.find(element.second) != movedWholeShapes.end())
+                                            {
+                                                count++;
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                return false;
+                                            }
+                                        }),
+                            fallingShapeContainer[originalY].end());
+                        
+                }
+            }
+        }
+
+        if(wasBrokenShapeMoved)
+        {
+
+            if (it->second.size() > 0)
+            {
+                individualComponentContainer[it->first].erase(
+                    std::remove_if(
+                        individualComponentContainer[it->first].begin(), 
+                        individualComponentContainer[it->first].end(),
+                        [movedBrokenShapes](std::pair<sf::RectangleShape **, IShape *> &element) 
+                        { 
+                            return ((element.second)->isShapeBroken() && movedBrokenShapes.find(element.first) != movedBrokenShapes.end()); 
+                        }),
+                    individualComponentContainer[it->first].end());
+            }
+        }
+
+    }
+
 }
 
 void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
@@ -343,6 +698,16 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
     {
         return;
     }
+
+    if (lastShape->isBomb() && terminateBomb)
+    {
+        terminateBombEarly(displayWindow);
+        terminateBomb = false;
+        delete lastShape;
+        lastShape = nullptr;
+        return;
+    }
+
 
     auto moveStatus = lastShape->getMoveStatus();
     if (!moveStatus)
@@ -359,6 +724,8 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
             for (auto &s : lastShape->getShapeContainer())
             {
                 auto yVal = getAllowedYVal((*s)->getPosition().y);
+                auto xVal = getAllowedXVal((*s)->getPosition().x);
+                (*s)->setPosition(sf::Vector2f(xVal,yVal));
                 individualComponentContainer[yVal].push_back(std::make_pair(s, lastShape));
             }
             shapeSettleSound.play();
@@ -397,7 +764,7 @@ void DisplayContainer::prepareDefaultScreenItems(sf::RenderWindow &displayWindow
     nextShape->drawShape(displayWindow);
 }
 
-void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow &displayWindow)
+void DisplayContainer::makeRowFall(unsigned int sourceY, sf::RenderWindow &displayWindow)
 {
 
     // to move the row down, you have to animate
@@ -407,44 +774,35 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
     // take the whole container and draw it
     // take the row which needs to fall and move it and then draw it
     // then display it
-    const sf::Vector2f fallVelocity = {0, 0.2f};
-
-    /*
-
-        how would you move the pieces? some are broken and some are full shapes
-
-        if you use IShape interface to move the pieces, then it will moove the shape from different
-        rows and you cant control
-
-        so you have to take induiidual shquares and drop them. but you have to see until which point
-        then should be dropped because for whole shape its different and for broken shape its different
-
-    */
+    const sf::Vector2f fallVelocity = {SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y};
 
     bool wasShapeMoved = true;
     bool wholeShapeMoved = false;
+    bool wasBrokenShapeMoved = false;
 
-    std::set<IShape *> addedWholeShapes;
+    std::set<IShape *> movedWholeShapes;
+    std::set<sf::RectangleShape **> movedBrokenShapes;
+    std::set<IShape *> uniqueWholeShapes;
 
     std::unordered_map<int, std::vector<int>> wholeShapeXY;
 
     for (auto &e : individualComponentContainer[sourceY])
     {
         if (!(e.second)->isShapeBroken())
-        {
-            if (addedWholeShapes.find((e.second)) == addedWholeShapes.end())
+        {                    
+            if (uniqueWholeShapes.find((e.second)) == uniqueWholeShapes.end())
             {
-                addedWholeShapes.insert((e.second));
+                uniqueWholeShapes.insert((e.second));
                 for (auto &s : ((e.second))->getShapeContainer())
                 {
-                    auto xval = (*(s))->getPosition().x;
-                    auto yval = getAllowedYVal((*(s))->getPosition().y);
-                    wholeShapeXY[yval].push_back(xval);
+                    auto xVal = getAllowedXVal((*(s))->getPosition().x);
+                    auto yVal = getAllowedYVal((*(s))->getPosition().y);
+                    wholeShapeXY[yVal].push_back(xVal);
                 }
             }
         }
     }
-    addedWholeShapes.clear();
+    uniqueWholeShapes.clear();
 
     while (wasShapeMoved)
     {
@@ -458,18 +816,27 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
 
             for (auto &e : individualComponentContainer[sourceY])
             {
-                auto xval = (*(e.first))->getPosition().x;
-                auto p1 = (*(e.first))->getPosition() + fallVelocity;
+                if(!(e.second)->canShapeFall())
+                {
+                    continue;
+                }
 
-                if ((e.second)->isShapeBroken() && p1.y <= getLowestYVal(xval, removedRow))
+                auto xVal = (*(e.first))->getPosition().x;
+                auto p1 = (*(e.first))->getPosition() + fallVelocity;
+                auto lowestPossibleY = getLowestYVal(xVal, sourceY+SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+                
+                if ((e.second)->isShapeBroken() && p1.y <= lowestPossibleY)
                 {
                     (*(e.first))->move(fallVelocity);
+                    movedBrokenShapes.insert((e.first));
                     wasShapeMoved = true;
+                    wasBrokenShapeMoved = true;
                 }
                 else if ((e.second)->moveShape())
                 {
                     wasShapeMoved = true;
                     wholeShapeMoved = true;
+                    movedWholeShapes.insert((e.second));
                 }
             }
         }
@@ -485,26 +852,29 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
 
     for (auto &e : individualComponentContainer[sourceY])
     {
-        auto *shapeInterface = (e.second);
-        if (shapeInterface->isShapeBroken())
+        auto *shapeInterface = e.second;
+        auto **square = e.first;
+        if (shapeInterface->isShapeBroken() && movedBrokenShapes.find(square) != movedBrokenShapes.end())
         {
-            const auto ypos = getAllowedYVal((*(e.first))->getPosition().y);
-            individualComponentContainer[ypos].push_back(std::make_pair(e.first, e.second));
+            const auto yVal = getAllowedYVal((*(square))->getPosition().y);
+            const auto xVal = getAllowedXVal((*square)->getPosition().x);
+            (*square)->setPosition(sf::Vector2f(xVal,yVal));
+            individualComponentContainer[yVal].push_back(std::make_pair(square, shapeInterface));
         }
-        else
+        else if(!shapeInterface->isShapeBroken() && uniqueWholeShapes.find(shapeInterface) == uniqueWholeShapes.end())
         {
-            if (wholeShapeMoved)
+            // the shape was moved because found in set
+            if (movedWholeShapes.find(shapeInterface) != movedWholeShapes.end())
             {
-                if (addedWholeShapes.find(shapeInterface) == addedWholeShapes.end())
-                {
-                    addedWholeShapes.insert(shapeInterface);
+                uniqueWholeShapes.insert(shapeInterface);
 
-                    auto squares = shapeInterface->getShapeContainer();
-                    for (auto &s : squares)
-                    {
-                        const auto yval = getAllowedYVal((*s)->getPosition().y);
-                        individualComponentContainer[yval].push_back(std::make_pair(s, shapeInterface));
-                    }
+                auto squares = shapeInterface->getShapeContainer();
+                for (auto &s : squares)
+                {
+                    const auto yVal = getAllowedYVal((*s)->getPosition().y);
+                    const auto xVal = getAllowedXVal((*s)->getPosition().x);
+                    (*s)->setPosition(sf::Vector2f(xVal,yVal));
+                    individualComponentContainer[yVal].push_back(std::make_pair(s, shapeInterface));
                 }
             }
         }
@@ -523,9 +893,11 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
                 individualComponentContainer[originalY].erase(
                     std::remove_if(individualComponentContainer[originalY].begin(),
                                    individualComponentContainer[originalY].end(),
-                                   [&count, &x1](std::pair<sf::RectangleShape **, IShape *> &element) {
-                                       if ((static_cast<int>(abs((*(element.first))->getPosition().x - x1)) < 2) &&
-                                           !element.second->isShapeBroken() && count == 0)
+                                   [&count, &x1, movedWholeShapes](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                       if ((std::fabs((*(element.first))->getPosition().x - x1) < 2.f) &&
+                                           !element.second->isShapeBroken() && 
+                                           count == 0 && 
+                                           movedWholeShapes.find(element.second) != movedWholeShapes.end())
                                        {
                                            count++;
                                            return true;
@@ -540,16 +912,22 @@ void DisplayContainer::makeRowFall(int sourceY, int removedRow, sf::RenderWindow
         }
     }
 
-    if (individualComponentContainer[sourceY].size() > 0)
+    if(wasBrokenShapeMoved)
     {
-        individualComponentContainer[sourceY].erase(
-            std::remove_if(
-                individualComponentContainer[sourceY].begin(), individualComponentContainer[sourceY].end(),
-                [](std::pair<sf::RectangleShape **, IShape *> &element) { return ((element.second)->isShapeBroken()); }
 
-                ),
-            individualComponentContainer[sourceY].end());
+        if (individualComponentContainer[sourceY].size() > 0)
+        {
+            individualComponentContainer[sourceY].erase(
+                std::remove_if(
+                    individualComponentContainer[sourceY].begin(), individualComponentContainer[sourceY].end(),
+                    [movedBrokenShapes](std::pair<sf::RectangleShape **, IShape *> &element) 
+                    { 
+                        return ((element.second)->isShapeBroken() && movedBrokenShapes.find(element.first) != movedBrokenShapes.end()); 
+                    }),
+                individualComponentContainer[sourceY].end());
+        }
     }
+
 }
 
 void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow &displayWindow)
@@ -599,20 +977,16 @@ void DisplayContainer::eraseCompletedRow(int removedRowY, sf::RenderWindow &disp
 
 void DisplayContainer::shiftStructureDownward(sf::RenderWindow &displayWindow, unsigned int yVal)
 {
-    int startShiftYVal = yVal - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-    int fullRowYVal = yVal;
-
     eraseCompletedRow(yVal, displayWindow);
     scoreValue += SCORE_PER_ROW;
 
+    const int startPointYval = yVal - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+
     for (auto it = individualComponentContainer.rbegin(); it != individualComponentContainer.rend(); it++)
     {
-
-        if (it->first <= startShiftYVal)
+        if(it->first <= startPointYval)
         {
-            makeRowFall(startShiftYVal, fullRowYVal, displayWindow);
-            startShiftYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
-            fullRowYVal -= SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+            makeRowFall(it->first, displayWindow);
         }
     }
 }
@@ -728,7 +1102,6 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
                 {
                     displayEnterUsernameScreen = false;
                     highScoreAchieved = false;
-                    MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
                 }
             }
 
@@ -748,6 +1121,7 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         {
             cleanDisplayContainer();
+            MetaFileHandler::updateNewHighScore(currentscore, highScoreUsername);
             MetaFileHandler::saveMetaDataFileAndClose();
             displayWindow.close();
         }
@@ -896,7 +1270,8 @@ void DisplayContainer::resetGamePaused()
 void DisplayContainer::setParamtersForCurrentStage()
 {
     SHAPE_DOWN_FALL_SPEED_Y = FALL_SPEED_FOR_STAGE[currentStageNumber - 1];
-
+    insertRowsAtbottom = true;
+ 
     if (currentStageNumber == 1)
     {
         shapeGen.setAllowedShapesCount(SHAPE_COUNT_FOR_STAGE[currentStageNumber - 1]);

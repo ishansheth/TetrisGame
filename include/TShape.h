@@ -12,7 +12,7 @@ struct TShape : public BaseShape
     // | 3 |
 
   public:
-    TShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(100, 250, 50))
+    TShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(213, 197, 138))
     {
     }
 
@@ -20,7 +20,7 @@ struct TShape : public BaseShape
     {
     }
 
-    virtual bool isBomb() override
+    virtual bool isBomb() const override
     {
         return false;
     }

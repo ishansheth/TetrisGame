@@ -18,7 +18,8 @@ void MetaFileHandler::updateNewHighScore(unsigned int score, const std::string& 
         bool usenameExist = false;
         for (auto it = savedHighScoreData.begin(); it != savedHighScoreData.end(); it++)
         {
-            if (it->second == username && score > it->first)
+            // keeping second condition comparison >= in case this function is called twice by accident
+            if (it->second == username && score >= it->first)
             {
                 it->first = score;
                 usenameExist = true;
@@ -31,11 +32,11 @@ void MetaFileHandler::updateNewHighScore(unsigned int score, const std::string& 
             savedHighScoreData.push_back(std::make_pair(score, username));
         }
 
+        std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
+                    [](const auto &a, const auto &b) { return a.first > b.first; });
+
         if (savedHighScoreData.size() > NO_SAVED_HIGHSCORE_USERNAMES)
         {
-            std::sort(savedHighScoreData.begin(), savedHighScoreData.end(),
-                        [](const auto &a, const auto &b) { return a.first > b.first; });
-
             savedHighScoreData.erase(std::prev(savedHighScoreData.end()));
         }
 
@@ -146,7 +147,7 @@ std::string MetaFileHandler::getHighScoreDisplayString()
         for (auto &[score, username] : savedHighScoreData)
         {
             highScoreDisplayData += username;
-            highScoreDisplayData += ":";
+            highScoreDisplayData += " : ";
             highScoreDisplayData += std::to_string(score);
             highScoreDisplayData += "\n";
         }

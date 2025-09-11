@@ -25,12 +25,13 @@ static constexpr unsigned int NUMBER_OF_ROWS_IN_GAME = 23;
 static constexpr unsigned int NEXT_SHAPE_X = DRAW_WINDOW_WIDTH + 10;
 static constexpr unsigned int NEXT_SHAPE_Y = 50;
 
-static constexpr unsigned int LAST_ROW_Y = DRAW_WINDOW_HEIGHT - SQUARE_SIDE_LENGTH - 2 * SQUARE_OUTLINE_THICKNESS;
+static constexpr unsigned int LAST_ROW_Y = DRAW_WINDOW_HEIGHT - SQUARE_SIDE_LENGTH -  SQUARE_OUTLINE_THICKNESS;
+static constexpr unsigned int FIRST_ROW_Y = 50;
 
 static constexpr unsigned int NUMBER_OF_STAGE_IN_GAME = 3;
 
-static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {4, 5, 6};
-static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.4f, 0.7f, 1.f};
+static constexpr unsigned int SHAPE_COUNT_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {6, 6, 6};
+static constexpr float FALL_SPEED_FOR_STAGE[NUMBER_OF_STAGE_IN_GAME] = {0.7f, 0.7f, 1.f};
 
 ///////////////////////////////////////////////////// Font related const
 ///////////////////////////////////////////////////
@@ -43,7 +44,7 @@ static constexpr unsigned int SCORE_PER_ROW = 10;
 
 // static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {300, 900, 2700};
 
-static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {100, 500, 1500};
+static constexpr unsigned int CLEARING_SCORE_PER_STAGE[NUMBER_OF_STAGE_IN_GAME] = {500, 500, 1500};
 
 static constexpr unsigned int NO_ROWS_DESTROYED_BY_BOMB = 3;
 
