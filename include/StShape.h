@@ -9,7 +9,7 @@ struct StShape : public BaseShape
     // stick shape
 
   public:
-    StShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(250, 50, 100))
+    StShape(DisplayContainer *displayManager) : BaseShape(displayManager, sf::Color(248, 131, 121))
     {
     }
 

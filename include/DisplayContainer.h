@@ -115,6 +115,8 @@ class DisplayContainer
 
     void createBombDamage(std::set<IShape*> brokenShapes, sf::RenderWindow& displayWindow);
 
+    void highlightBombDestroyedShapes();
+
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
 

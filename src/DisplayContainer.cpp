@@ -168,6 +168,20 @@ void DisplayContainer::handleKey(const sf::Keyboard::Key &key)
         return;
     }
 
+    if (lastShape != nullptr && lastShape->isBomb())
+    {
+        for(auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+        {
+            if(it->second.size() > 0)
+            {
+                for(auto& element : it->second)
+                {   
+                    (*(element.first))->setOutlineColor(sf::Color(255, 255, 255));
+                }
+            }
+        }   
+    }
+
     if (lastShape != nullptr && lastShape->isBomb() && key == sf::Keyboard::Space)
     {
         // terminate bomb before it hits bottom
@@ -205,6 +219,13 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
     fContainerRef.setFontString(GameFontStrings::STAGE_VALUE, std::to_string(currentStageNumber));
 
     drawDisplayContainer(displayWindow);
+    if(lastShape->isBomb())
+    {
+        // highlight which squares and shapes will be destroyed by bomb
+        // so that user can decide
+        highlightBombDestroyedShapes();
+    }
+
 
     if(insertRowsAtbottom && !isGamePaused)
     {
@@ -217,6 +238,67 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
         }
 
     }
+}
+
+void DisplayContainer::highlightBombDestroyedShapes()
+{
+    int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+
+    auto yPos = getAllowedYVal((*(lastShape->getShapeContainer()[0]))->getPosition().y);
+
+    if(minx < 0)
+    {
+        minx = 0;
+    }
+    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+    unsigned int upperMostRowYval = 0;
+    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+    {
+        for (auto &element : it->second)
+        {
+            auto x = static_cast<int>((*(element.first))->getPosition().x);
+            if (x >= minx && x <= maxx)
+            {
+                upperMostRowYval = it->first;
+                break;
+            }
+        }
+
+        if (upperMostRowYval != 0)
+        {
+            break;
+        }        
+    }
+
+    if (upperMostRowYval == 0)
+    {
+        return;
+    }
+    unsigned int removedRowCnt = 0;
+
+    while(removedRowCnt < NO_ROWS_DESTROYED_BY_BOMB && upperMostRowYval <= LAST_ROW_Y)            
+    {
+        std::sort(
+            individualComponentContainer[upperMostRowYval].begin(), 
+            individualComponentContainer[upperMostRowYval].end(),
+            [](std::pair<sf::RectangleShape **, IShape *> &a, std::pair<sf::RectangleShape **, IShape *> &b) {
+                return (**(a.first)).getPosition().x < (**(b.first)).getPosition().x;
+            });
+
+        for (auto &element : individualComponentContainer[upperMostRowYval])
+        {
+            auto xpos = static_cast<int>((*(element.first))->getPosition().x);
+
+            if (xpos >= minx && xpos <= maxx)
+            {
+                (*(element.first))->setOutlineColor(sf::Color(157, 0, 255));
+            }
+        }
+
+        upperMostRowYval += SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+        removedRowCnt++;
+    }
+
 }
 
 // raise the mud from bottom which means insert rows of single squares with brown color
@@ -280,6 +362,17 @@ void DisplayContainer::insertRowAtBottom()
 
 void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
 {
+    for(auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
+    {
+        if(it->second.size() > 0)
+        {
+            for(auto& element : it->second)
+            {   
+                (*(element.first))->setOutlineColor(sf::Color(255, 255, 255));
+            }
+        }
+    }   
+
     const float ypos = (*(lastShape->getShapeContainer()[0]))->getPosition().y;
     const float minx = (*(lastShape->getShapeContainer()[0]))->getPosition().x;
     const float maxx = minx + (3.f * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
@@ -318,6 +411,9 @@ void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
 void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 {
     int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+
+    auto yPos = getAllowedYVal((*(lastShape->getShapeContainer()[0]))->getPosition().y);
+
     if(minx < 0)
     {
         minx = 0;
@@ -386,7 +482,6 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
                 for (auto &element : individualComponentContainer[upperMostRowYval])
                 {
                     auto xpos = static_cast<int>((*(element.first))->getPosition().x);
-                    auto ypos = static_cast<int>((*(element.first))->getPosition().y);
 
                     if (xpos >= minx && xpos <= maxx)
                     {
@@ -1270,7 +1365,6 @@ void DisplayContainer::resetGamePaused()
 void DisplayContainer::setParamtersForCurrentStage()
 {
     SHAPE_DOWN_FALL_SPEED_Y = FALL_SPEED_FOR_STAGE[currentStageNumber - 1];
-    insertRowsAtbottom = true;
  
     if (currentStageNumber == 1)
     {
@@ -1286,9 +1380,6 @@ void DisplayContainer::setParamtersForCurrentStage()
     }
     else if (currentStageNumber == 4)
     {
-        // TODO: in the last stage, the whole structre will move upwards at regular interval, maybe 1 min
-        // for this add a row at the bottom with random x values
-        // or offer one more shape or power to the user 
         insertRowsAtbottom = true;
     }
     else
