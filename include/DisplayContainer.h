@@ -117,6 +117,8 @@ class DisplayContainer
 
     void highlightBombDestroyedShapes();
 
+    void getBombDestructionBox(unsigned int& minX, unsigned int& upperMostY);
+
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
 

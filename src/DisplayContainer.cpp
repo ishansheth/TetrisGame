@@ -240,35 +240,45 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
     }
 }
 
-void DisplayContainer::highlightBombDestroyedShapes()
+
+void DisplayContainer::getBombDestructionBox(unsigned int& minX, unsigned int& upperMostY)
 {
-    int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    minX = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    unsigned int maxx = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
-    auto yPos = getAllowedYVal((*(lastShape->getShapeContainer()[0]))->getPosition().y);
-
-    if(minx < 0)
+    if(minX < 0)
     {
-        minx = 0;
+        minX = 0;
     }
-    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
-    unsigned int upperMostRowYval = 0;
+
     for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
     {
         for (auto &element : it->second)
         {
             auto x = static_cast<int>((*(element.first))->getPosition().x);
-            if (x >= minx && x <= maxx)
+            if (x >= minX && x <= maxx)
             {
-                upperMostRowYval = it->first;
+                upperMostY = it->first;
                 break;
             }
         }
 
-        if (upperMostRowYval != 0)
+        if (upperMostY != 0)
         {
             break;
         }        
     }
+
+}
+
+void DisplayContainer::highlightBombDestroyedShapes()
+{
+    unsigned int minX = 0;
+    unsigned int upperMostRowYval = 0;
+
+    getBombDestructionBox(minX, upperMostRowYval);
+
+    unsigned int maxX = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
     if (upperMostRowYval == 0)
     {
@@ -289,7 +299,7 @@ void DisplayContainer::highlightBombDestroyedShapes()
         {
             auto xpos = static_cast<int>((*(element.first))->getPosition().x);
 
-            if (xpos >= minx && xpos <= maxx)
+            if (xpos >= minX && xpos <= maxX)
             {
                 (*(element.first))->setOutlineColor(sf::Color(157, 0, 255));
             }
@@ -410,43 +420,20 @@ void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
 
 void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 {
-    int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
 
-    auto yPos = getAllowedYVal((*(lastShape->getShapeContainer()[0]))->getPosition().y);
-
-    if(minx < 0)
-    {
-        minx = 0;
-    }
-    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
-
-    // correct the elements which are pushed in this vector with better corner case consideration
-    // and thinking how the bomb would drop and which rows would be affected
+    unsigned int minX = 0;
     unsigned int upperMostRowYval = 0;
-    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
-    {
-        for (auto &element : it->second)
-        {
-            auto x = static_cast<int>((*(element.first))->getPosition().x);
-            if (x >= minx && x <= maxx)
-            {
-                upperMostRowYval = it->first;
-                break;
-            }
-        }
 
-        if (upperMostRowYval != 0)
-        {
-            break;
-        }        
-    }
+    getBombDestructionBox(minX, upperMostRowYval);
 
     if (upperMostRowYval == 0)
     {
         return;
     }
 
-    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, upperMostRowYval));
+    unsigned int maxX = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxX + minX) / 2, upperMostRowYval));
 
     // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
     // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
@@ -483,7 +470,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
                 {
                     auto xpos = static_cast<int>((*(element.first))->getPosition().x);
 
-                    if (xpos >= minx && xpos <= maxx)
+                    if (xpos >= minX && xpos <= maxX)
                     {
                         delete *(element.first);
                         *(element.first) = nullptr;
