@@ -5,5 +5,5 @@ bool isWithinWindow(const sf::Vector2f &v);
 
 bool isWithinDrawWindow(const sf::Vector2f &v);
 
-bool isWithinDrawWindow(const sf::Vector2f &v, unsigned int length);
+bool isWithinDrawWindow(const sf::Vector2f &v, const unsigned int& length);
 
