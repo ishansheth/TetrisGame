@@ -83,7 +83,7 @@ class DisplayContainer
     uint32_t currentscore;
     std::string highScoreDisplayData;
     
-    int getLowestYVal(const float x, const float refY);
+    int getLowestYVal(const float x, const float refY) const;
 
     void terminateBombEarly(sf::RenderWindow &displayWindow);
 
@@ -97,15 +97,15 @@ class DisplayContainer
 
     bool isGameOver();
 
-    unsigned int getAllowedYVal(const float yCoordinate);
+    unsigned int getAllowedYVal(const float yCoordinate) const;
 
-    unsigned int getAllowedXVal(const float xCoordinate);
+    unsigned int getAllowedXVal(const float xCoordinate) const;
 
-    void moveShapes();
+    void moveShapes() const;
 
     void handleBombDrop(sf::RenderWindow &displayWindow);
 
-    void drawDisplayContainer(sf::RenderWindow &displayWindow);
+    void drawDisplayContainer(sf::RenderWindow &displayWindow) const;
 
     void insertRowAtBottom();
 
@@ -117,6 +117,10 @@ class DisplayContainer
 
     void highlightBombDestroyedShapes();
 
+    void getBombDestructionBox(int& minX, int& upperMostY) const;
+
+    void prepareDefaultScreenItems(sf::RenderWindow &displayWindow) const;
+
   public:
     DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegenerator);
 
@@ -124,7 +128,7 @@ class DisplayContainer
 
     void resetGamePaused();
 
-    bool isIntersecting(const sf::Vector2f &shapePosition, const IShape *ignoreshape);
+    bool isIntersecting(const sf::Vector2f &shapePosition, const IShape *ignoreshape) const;
 
     void generateAndDrawShape(sf::RenderWindow &);
 
@@ -134,11 +138,9 @@ class DisplayContainer
 
     void handleGameState(sf::RenderWindow &displayWindow);
 
-    void showCurrentStageScreen(sf::RenderWindow &displayWindow);
+    void showCurrentStageScreen(sf::RenderWindow &displayWindow) const;
 
     void cleanDisplayContainer();
-
-    void prepareDefaultScreenItems(sf::RenderWindow &displayWindow);
 
     void eraseCompletedRow(int removedRowY, sf::RenderWindow &displayWindow);
 

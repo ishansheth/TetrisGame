@@ -16,7 +16,7 @@ bool isWithinDrawWindow(const sf::Vector2f &v)
             v.y + SQUARE_SIDE_LENGTH + SQUARE_OUTLINE_THICKNESS <= DRAW_WINDOW_HEIGHT);
 }
 
-bool isWithinDrawWindow(const sf::Vector2f &v, unsigned int length)
+bool isWithinDrawWindow(const sf::Vector2f &v, const unsigned int& length)
 {
     return (v.x >= 0 && v.x + length <= DRAW_WINDOW_WIDTH && v.y >= 0 &&
             v.y + length <= DRAW_WINDOW_HEIGHT);

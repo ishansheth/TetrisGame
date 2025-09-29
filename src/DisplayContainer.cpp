@@ -74,7 +74,7 @@ bool DisplayContainer::isGameOver()
 }
 
 // check of falling shape is intersecting with currently displayed shapes
-bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const IShape *ignoreshape)
+bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const IShape *ignoreshape) const
 {
     // get all the shapes for the container which is currently displayed in window
     for (auto &s : individualComponentContainer)
@@ -111,13 +111,13 @@ bool DisplayContainer::isIntersecting(const sf::Vector2f &shapePosition, const I
 }
 
 
-int DisplayContainer::getLowestYVal(const float searchX, const float refY)
+int DisplayContainer::getLowestYVal(const float searchX, const float refY) const
 {
     auto iteratorPtr = individualComponentContainer.find(refY);
     for (; iteratorPtr != individualComponentContainer.end(); iteratorPtr++)
     {
         auto searchPtr = std::find_if(iteratorPtr->second.begin(), iteratorPtr->second.end(),
-                                      [&searchX](std::pair<sf::RectangleShape **, IShape *> &element) {
+                                      [&searchX](const std::pair<sf::RectangleShape **, IShape *> &element) {
                                           return (std::fabs((*(element.first))->getPosition().x - searchX) <= 3.f);
                                       });
         if (searchPtr != iteratorPtr->second.end())
@@ -128,7 +128,7 @@ int DisplayContainer::getLowestYVal(const float searchX, const float refY)
     return rowYCoordinate[0];
 }
 
-unsigned int DisplayContainer::getAllowedYVal(const float yCoordinate)
+unsigned int DisplayContainer::getAllowedYVal(const float yCoordinate) const
 {
     int minIdx = -1;
     int minDiff = 1000;
@@ -144,7 +144,7 @@ unsigned int DisplayContainer::getAllowedYVal(const float yCoordinate)
     return rowYCoordinate[minIdx];
 }
 
-unsigned int DisplayContainer::getAllowedXVal(const float xCoordinate)
+unsigned int DisplayContainer::getAllowedXVal(const float xCoordinate) const
 {
     int minIdx = -1;
     int minDiff = 1000;
@@ -240,35 +240,47 @@ void DisplayContainer::generateAndDrawShape(sf::RenderWindow &displayWindow)
     }
 }
 
-void DisplayContainer::highlightBombDestroyedShapes()
+
+void DisplayContainer::getBombDestructionBox(int& minX, int& upperMostY) const
 {
-    int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
+    minX = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - 
+            static_cast<int>(SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+            
+    int maxx = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
-    auto yPos = getAllowedYVal((*(lastShape->getShapeContainer()[0]))->getPosition().y);
-
-    if(minx < 0)
+    if(minX < 0)
     {
-        minx = 0;
+        minX = 0;
     }
-    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
-    unsigned int upperMostRowYval = 0;
+
     for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
     {
         for (auto &element : it->second)
         {
             auto x = static_cast<int>((*(element.first))->getPosition().x);
-            if (x >= minx && x <= maxx)
+            if (x >= minX && x <= maxx)
             {
-                upperMostRowYval = it->first;
+                upperMostY = it->first;
                 break;
             }
         }
 
-        if (upperMostRowYval != 0)
+        if (upperMostY != 0)
         {
             break;
         }        
     }
+
+}
+
+void DisplayContainer::highlightBombDestroyedShapes()
+{
+    int minX = 0;
+    int upperMostRowYval = 0;
+
+    getBombDestructionBox(minX, upperMostRowYval);
+
+    unsigned int maxX = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
     if (upperMostRowYval == 0)
     {
@@ -289,7 +301,7 @@ void DisplayContainer::highlightBombDestroyedShapes()
         {
             auto xpos = static_cast<int>((*(element.first))->getPosition().x);
 
-            if (xpos >= minx && xpos <= maxx)
+            if (xpos >= minX && xpos <= maxX)
             {
                 (*(element.first))->setOutlineColor(sf::Color(157, 0, 255));
             }
@@ -410,43 +422,20 @@ void DisplayContainer::terminateBombEarly(sf::RenderWindow &displayWindow)
 
 void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
 {
-    int minx = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - SQUARE_SIDE_LENGTH_WITH_OUTLINE;
 
-    auto yPos = getAllowedYVal((*(lastShape->getShapeContainer()[0]))->getPosition().y);
+    int minX = 0;
+    int upperMostRowYval = 0;
 
-    if(minx < 0)
-    {
-        minx = 0;
-    }
-    unsigned int maxx = minx + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
-
-    // correct the elements which are pushed in this vector with better corner case consideration
-    // and thinking how the bomb would drop and which rows would be affected
-    unsigned int upperMostRowYval = 0;
-    for (auto it = individualComponentContainer.begin(); it != individualComponentContainer.end(); it++)
-    {
-        for (auto &element : it->second)
-        {
-            auto x = static_cast<int>((*(element.first))->getPosition().x);
-            if (x >= minx && x <= maxx)
-            {
-                upperMostRowYval = it->first;
-                break;
-            }
-        }
-
-        if (upperMostRowYval != 0)
-        {
-            break;
-        }        
-    }
+    getBombDestructionBox(minX, upperMostRowYval);
 
     if (upperMostRowYval == 0)
     {
         return;
     }
 
-    bombExplosionParticles.setEmitter(sf::Vector2f((maxx + minx) / 2, upperMostRowYval));
+    unsigned int maxX = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
+
+    bombExplosionParticles.setEmitter(sf::Vector2f((maxX + minX) / 2, upperMostRowYval));
 
     // bomb explosion sound runs about 4000 ms and while loop has delay of 100ms
     // so set the count 4000/100 so that whole sound is heard when explosion particle effect is displayed in the loop
@@ -483,7 +472,7 @@ void DisplayContainer::handleBombDrop(sf::RenderWindow &displayWindow)
                 {
                     auto xpos = static_cast<int>((*(element.first))->getPosition().x);
 
-                    if (xpos >= minx && xpos <= maxx)
+                    if (xpos >= minX && xpos <= maxX)
                     {
                         delete *(element.first);
                         *(element.first) = nullptr;
@@ -831,7 +820,7 @@ void DisplayContainer::processshapes(sf::RenderWindow &displayWindow)
     }
 }
 
-void DisplayContainer::drawDisplayContainer(sf::RenderWindow &displayWindow)
+void DisplayContainer::drawDisplayContainer(sf::RenderWindow &displayWindow) const
 {
     for (auto &s : individualComponentContainer)
     {
@@ -843,7 +832,7 @@ void DisplayContainer::drawDisplayContainer(sf::RenderWindow &displayWindow)
     }
 }
 
-void DisplayContainer::prepareDefaultScreenItems(sf::RenderWindow &displayWindow)
+void DisplayContainer::prepareDefaultScreenItems(sf::RenderWindow &displayWindow) const
 {
 
     displayWindow.draw(borderLine1, 2, sf::Lines);
@@ -1347,7 +1336,7 @@ void DisplayContainer::showGameCompleteScreenAndExit(sf::RenderWindow &displayWi
     exit(1);
 }
 
-void DisplayContainer::moveShapes()
+void DisplayContainer::moveShapes() const
 {
     lastShape->moveShape();
 }
@@ -1390,7 +1379,7 @@ void DisplayContainer::setParamtersForCurrentStage()
 }
 
 
-void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow)
+void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow) const
 {
     // clear the screen
     displayWindow.clear(sf::Color::Black);
