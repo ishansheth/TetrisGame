@@ -245,9 +245,7 @@ void DisplayContainer::getBombDestructionBox(int& minX, int& upperMostY) const
 {
     minX = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - 
             static_cast<int>(SQUARE_SIDE_LENGTH_WITH_OUTLINE);
-
-    upperMostY = 0;
-    
+   
     int maxx = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
     if(minX < 0)
@@ -1383,7 +1381,7 @@ void DisplayContainer::setParamtersForCurrentStage()
 }
 
 
-void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow) 
+void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow)
 {
     IShape* addedShape = nullptr;
     // clear the screen
