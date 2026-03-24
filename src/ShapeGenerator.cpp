@@ -128,9 +128,58 @@ void ShapeGenerator::generateShapes()
     }
 }
 
+IShape* ShapeGenerator::getNewAddedShape(sf::Vector2f position, DisplayContainer *dCont) const
+{
+    if (lastAllowedShape == 1)
+    {
+        // s shape
+        SShape *a = new SShape(dCont);
+        a->setPosition(position);
+        return a;
+    }
+    else if (lastAllowedShape == 2)
+    {
+        // L shape
+        LShape *a = new LShape(dCont);
+        a->setPosition(position);
+        return a;
+    }
+    else if (lastAllowedShape == 3)
+    {
+        // | shape
+        StShape *a = new StShape(dCont);
+        a->setPosition(position);
+        return a;
+    }
+    else if (lastAllowedShape == 4)
+    {
+        // o shape
+        SqShape *a = new SqShape(dCont);
+        a->setPosition(position);
+        return a;
+    }
+    else if (lastAllowedShape == 5)
+    {
+        // T shape
+        TShape *a = new TShape(dCont);
+        a->setPosition(position);
+        return a;
+    }
+    else if (lastAllowedShape == 6)
+    {
+        // bomb shape
+        BombShape *a = new BombShape(dCont);
+        a->setPosition(position);
+        return a;
+    }
+
+
+}
+
 void ShapeGenerator::setAllowedShapesCount(unsigned int cnt)
 {
     uniformDistribution.param(std::uniform_int_distribution<std::mt19937::result_type>::param_type{1, cnt});
+    lastAllowedShape = cnt;
 }
 
 

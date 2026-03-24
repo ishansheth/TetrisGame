@@ -126,6 +126,8 @@ class DisplayContainer
 
     void setGamePaused();
 
+    void showInstructionScreen(sf::RenderWindow &);
+
     void resetGamePaused();
 
     bool isIntersecting(const sf::Vector2f &shapePosition, const IShape *ignoreshape) const;
@@ -138,7 +140,7 @@ class DisplayContainer
 
     void handleGameState(sf::RenderWindow &displayWindow);
 
-    void showCurrentStageScreen(sf::RenderWindow &displayWindow) const;
+    void showCurrentStageScreen(sf::RenderWindow &displayWindow);
 
     void cleanDisplayContainer();
 

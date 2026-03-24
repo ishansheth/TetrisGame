@@ -24,6 +24,9 @@ enum class GameFontStrings
     ENTER_USERNAME,
     GAME_COMPLETE_MESSAGE,
     WINDOW_CLOSE_HIGHSCORE_SAVED,
+    GAME_KEYS_INSTRUCTION,
+    GAME_NEW_SHAPE_ADDED_INFO,
+    BOMB_SHAPE_INSTRUCTION,
     MAXIMUM_NUMBER_OF_FONTS
 };
 
@@ -43,7 +46,10 @@ static const std::unordered_map<GameFontStrings, std::string> fontKeyToStrings{
     {GameFontStrings::HIGH_SCORE_VALUES, ""},
     {GameFontStrings::STAGE_COMPLETE_MESSAGE, ""},
     {GameFontStrings::GAME_COMPLETE_MESSAGE, "Congratulations!! \n GAME COMPLETE!! \n Now go outside and play!!"},
-    {GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED, "New HighScore Achieved and Saved!"}
+    {GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED, "New HighScore Achieved and Saved!"},
+    {GameFontStrings::GAME_KEYS_INSTRUCTION, "Keys to use: \n <- move shape left \n -> move shape right \n [SPACE] rotate"},
+    {GameFontStrings::GAME_NEW_SHAPE_ADDED_INFO, "New Shape available:"},
+    {GameFontStrings::BOMB_SHAPE_INSTRUCTION, "Bomb available: \n Destroys Highlighted bricks \n Press [SPACE] to terminate midair"},
 };
 
 static const std::unordered_map<GameFontStrings, sf::Vector2f> stringToLocation{
@@ -64,7 +70,10 @@ static const std::unordered_map<GameFontStrings, sf::Vector2f> stringToLocation{
     {GameFontStrings::HIGH_SCORE_VALUES, {DRAW_WINDOW_WIDTH + 10, 285}},
     {GameFontStrings::STAGE_COMPLETE_MESSAGE, {250,200}},
     {GameFontStrings::GAME_COMPLETE_MESSAGE, {250,200}},
-    {GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED, {250,240}}
+    {GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED, {250,240}},
+    {GameFontStrings::GAME_KEYS_INSTRUCTION, {250,240}},
+    {GameFontStrings::GAME_NEW_SHAPE_ADDED_INFO, {250,240}},
+    {GameFontStrings::BOMB_SHAPE_INSTRUCTION, {250,240}}
 };
 
 class FontContainer

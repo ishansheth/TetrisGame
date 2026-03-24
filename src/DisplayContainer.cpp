@@ -19,7 +19,7 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
     auto yVal = LAST_ROW_Y;
     auto xval = SQUARE_OUTLINE_THICKNESS;
 
-    for (int i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
+    for (auto i = NUMBER_OF_ROWS_IN_GAME; i > 0; i--)
     {
         individualComponentContainer[yVal] = std::vector<std::pair<sf::RectangleShape **, IShape *>>();
         rowYCoordinate.push_back(yVal);
@@ -245,7 +245,9 @@ void DisplayContainer::getBombDestructionBox(int& minX, int& upperMostY) const
 {
     minX = static_cast<int>((*(lastShape->getShapeContainer()[0]))->getPosition().x) - 
             static_cast<int>(SQUARE_SIDE_LENGTH_WITH_OUTLINE);
-            
+
+    upperMostY = 0;
+    
     int maxx = minX + (4 * SQUARE_SIDE_LENGTH_WITH_OUTLINE);
 
     if(minX < 0)
@@ -1287,11 +1289,13 @@ void DisplayContainer::handleGameState(sf::RenderWindow &displayWindow)
         displayWindow.clear(sf::Color::Black);
 
         currentStageNumber++;
-        showCurrentStageScreen(displayWindow);
-        // set the parameter for the next stage
 
         lastShape = nullptr;
+        // set the parameter for the next stage
+
         setParamtersForCurrentStage();
+        showCurrentStageScreen(displayWindow);
+
         // display the necessary fonts
         fContainerRef.drawFonts(displayWindow);
         // display partition line
@@ -1379,8 +1383,9 @@ void DisplayContainer::setParamtersForCurrentStage()
 }
 
 
-void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow) const
+void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow) 
 {
+    IShape* addedShape = nullptr;
     // clear the screen
     displayWindow.clear(sf::Color::Black);
 
@@ -1398,13 +1403,36 @@ void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow) c
                                    STAGE_COMPLETE_MSG_Y);
     fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_VALUE, STAGE_COMPLETE_MSG_X + 80,
                                    STAGE_COMPLETE_MSG_Y);
+    
+    if(currentStageNumber >= 2)
+    {
+        
+        addedShape = shapeGen.getNewAddedShape(sf::Vector2f(STAGE_COMPLETE_MSG_X + 100,STAGE_COMPLETE_MSG_Y+ 80), this);
+        addedShape->drawShape(displayWindow);
+        if(addedShape->isBomb())
+        {
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::BOMB_SHAPE_INSTRUCTION, STAGE_COMPLETE_MSG_X,
+                                        STAGE_COMPLETE_MSG_Y+ 80);
+        }
+        else
+        {
+            fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_NEW_SHAPE_ADDED_INFO, STAGE_COMPLETE_MSG_X,
+                                        STAGE_COMPLETE_MSG_Y+ 80);
+        }
+    }
+
     // display
     displayWindow.display();
     // wait
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     // clear
     displayWindow.clear(sf::Color::Black);
 
+    if(addedShape)
+    {
+        delete addedShape;
+    }
+    
     // reset the position of stage label and values string
     fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_LABEL,
                                    stringToLocation.at(GameFontStrings::STAGE_LABEL).x,
@@ -1412,6 +1440,28 @@ void DisplayContainer::showCurrentStageScreen(sf::RenderWindow &displayWindow) c
     fContainerRef.drawSingleString(displayWindow, GameFontStrings::STAGE_VALUE,
                                    stringToLocation.at(GameFontStrings::STAGE_VALUE).x,
                                    stringToLocation.at(GameFontStrings::STAGE_VALUE).y);
+}
+
+void DisplayContainer::showInstructionScreen(sf::RenderWindow & displayWindow)
+{
+    // clear the screen
+    displayWindow.clear(sf::Color::Black);
+
+    // draw border line
+    displayWindow.draw(borderLine1, 2, sf::Lines);
+    displayWindow.draw(borderLine2, 2, sf::Lines);
+    displayWindow.draw(borderLine3, 2, sf::Lines);
+    displayWindow.draw(borderLine4, 2, sf::Lines);
+
+    fContainerRef.drawSingleString(displayWindow, GameFontStrings::GAME_KEYS_INSTRUCTION, STAGE_COMPLETE_MSG_X, STAGE_COMPLETE_MSG_Y);
+
+    // display
+    displayWindow.display();
+    // wait
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // clear
+    displayWindow.clear(sf::Color::Black);
+
 }
 
 void DisplayContainer::cleanDisplayContainer()

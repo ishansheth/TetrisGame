@@ -12,6 +12,7 @@ class ShapeGenerator
     std::random_device dev;
     std::mt19937 rng;
     std::uniform_int_distribution<std::mt19937::result_type> uniformDistribution;
+    unsigned int lastAllowedShape;
 
   public:
     ShapeGenerator() : shapeIndexArray{-1, -1}, rng(dev()), uniformDistribution(1, 5)
@@ -25,6 +26,8 @@ class ShapeGenerator
     IShape *getShape(sf::Vector2f position, DisplayContainer *dCont);
 
     void generateShapes();
+
+    IShape* getNewAddedShape(sf::Vector2f position, DisplayContainer *dCont) const;
 
     // sets the allowed shapes to be generated from
     // if you call again with different input container, last one will be replaced
