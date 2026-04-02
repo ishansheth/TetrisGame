@@ -6,7 +6,7 @@ FontContainer::FontContainer()
     static_assert(static_cast<int>(GameFontStrings::NEXT_SHAPE_LABEL) == 0,
                 "GameFontStrings must start at zero");
     static_assert(static_cast<int>(GameFontStrings::MAXIMUM_NUMBER_OF_FONTS) ==
-                static_cast<int>(GameFontStrings::BOMB_SHAPE_INSTRUCTION) + 1,
+                static_cast<int>(GameFontStrings::FLOOR_RAISE_INSTRUCTION) + 1,
                 "GameFontStrings must remain contiguous");
 
 

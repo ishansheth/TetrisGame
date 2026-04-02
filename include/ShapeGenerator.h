@@ -21,13 +21,15 @@ class ShapeGenerator
         shapeIndexArray[1] = uniformDistribution(rng);
     }
 
+    IShape* getNumberMappedShape(unsigned int shapeNumber, sf::Vector2f position, DisplayContainer *dCont);
+
     IShape *getNextShape(sf::Vector2f position, DisplayContainer *dCont);
 
     IShape *getShape(sf::Vector2f position, DisplayContainer *dCont);
 
     void generateShapes();
 
-    IShape* getNewAddedShape(sf::Vector2f position, DisplayContainer *dCont) const;
+    IShape* getNewAddedShape(sf::Vector2f position, DisplayContainer *dCont);
 
     // sets the allowed shapes to be generated from
     // if you call again with different input container, last one will be replaced

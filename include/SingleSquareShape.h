@@ -14,7 +14,7 @@ class SingleSquare : public IShape
     public:
     SingleSquare(sf::Color color): rectangle(new sf::RectangleShape()), squareColor(color)
     {
-        shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(TEXTURE_FILE_PATH)),
+        shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(BRICK_TEXTURE_FILE_PATH)),
                                   sf::IntRect({0, 0}, {32, 32}));
 
         rectangle->setSize(sf::Vector2f(SQUARE_SIDE_LENGTH, SQUARE_SIDE_LENGTH));

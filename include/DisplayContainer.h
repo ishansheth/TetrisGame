@@ -59,6 +59,9 @@ class DisplayContainer
     sf::Clock rowInsertionTimer;
     sf::Time oneMinTime;
 
+    sf::Texture tetrisPosterTexture;
+    sf::RectangleShape posterRectangle;
+
     FontContainer &fContainerRef;
     ShapeGenerator &shapeGen;
 
@@ -78,12 +81,15 @@ class DisplayContainer
     bool gameComplete;
     bool windowClosePressed;
     bool terminateBomb;
+    bool isNewShapeAdded;
 
     std::string highScoreUsername;
     uint32_t currentscore;
     std::string highScoreDisplayData;
+
+    GameFontStrings getStageInstruction();
     
-    int getLowestYVal(const float x, const float refY) const;
+    unsigned int getLowestYVal(const float x, const float refY) const;
 
     void terminateBombEarly(sf::RenderWindow &displayWindow);
 
@@ -103,7 +109,7 @@ class DisplayContainer
 
     void moveShapes() const;
 
-    void handleBombDrop(sf::RenderWindow &displayWindow);
+    void handleBombDrop(sf::RenderWindow &displayWindow, unsigned int upperMostRowYval, unsigned int minX);
 
     void drawDisplayContainer(sf::RenderWindow &displayWindow) const;
 
@@ -112,8 +118,6 @@ class DisplayContainer
     void showGameCompleteScreenAndExit(sf::RenderWindow &displayWindow);
 
     void makeRowFall(unsigned int sourceY, sf::RenderWindow &displayWindow);
-
-    void createBombDamage(std::set<IShape*> brokenShapes, sf::RenderWindow& displayWindow);
 
     void highlightBombDestroyedShapes();
 
@@ -127,6 +131,8 @@ class DisplayContainer
     void setGamePaused();
 
     void showInstructionScreen(sf::RenderWindow &);
+
+    void showGamePoster(sf::RenderWindow &displayWindow);
 
     void resetGamePaused();
 

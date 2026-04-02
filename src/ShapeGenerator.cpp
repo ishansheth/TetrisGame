@@ -12,100 +12,67 @@ static unsigned int idx = 0;
 static constexpr unsigned int arr_len = 14;
 static constexpr unsigned int testShapes[arr_len] = {5, 5, 5, 1, 1, 2, 2, 2, 2, 2, 2, 2, 6, 6};
 
-IShape *ShapeGenerator::getNextShape(sf::Vector2f position, DisplayContainer *dCont)
+IShape* ShapeGenerator::getNumberMappedShape(unsigned int shapeNumber, sf::Vector2f position, DisplayContainer *dCont)
 {
-    auto shapeNumber = shapeIndexArray[1];
-
     if (shapeNumber == 1)
     {
         // s shape
-        SShape *a = new SShape(dCont);
-        a->setPosition(position);
-        return a;
+        SShape *shape = new SShape(dCont);
+        shape->setPosition(position);
+        return shape;
     }
     else if (shapeNumber == 2)
     {
         // L shape
-        LShape *a = new LShape(dCont);
-        a->setPosition(position);
-        return a;
+        LShape *shape = new LShape(dCont);
+        shape->setPosition(position);
+        return shape;
     }
     else if (shapeNumber == 3)
     {
         // | shape
-        StShape *a = new StShape(dCont);
-        a->setPosition(position);
-        return a;
+        StShape *shape = new StShape(dCont);
+        shape->setPosition(position);
+        return shape;
     }
     else if (shapeNumber == 4)
     {
         // o shape
-        SqShape *a = new SqShape(dCont);
-        a->setPosition(position);
-        return a;
+        SqShape *shape = new SqShape(dCont);
+        shape->setPosition(position);
+        return shape;
     }
     else if (shapeNumber == 5)
     {
         // T shape
-        TShape *a = new TShape(dCont);
-        a->setPosition(position);
-        return a;
+        TShape *shape = new TShape(dCont);
+        shape->setPosition(position);
+        return shape;
     }
     else if (shapeNumber == 6)
     {
         // bomb shape
-        BombShape *a = new BombShape(dCont);
-        a->setPosition(position);
-        return a;
+        BombShape *shape = new BombShape(dCont);
+        shape->setPosition(position);
+        return shape;
     }
+    else
+    {
+        // s shape
+        SShape *defaultShape = new SShape(dCont);
+        defaultShape->setPosition(position);
+        return defaultShape;
+    }
+}
+
+IShape* ShapeGenerator::getNextShape(sf::Vector2f position, DisplayContainer *dCont)
+{
+    return getNumberMappedShape(shapeIndexArray[1], position, dCont);
 }
 
 IShape *ShapeGenerator::getShape(sf::Vector2f position, DisplayContainer *dCont)
 {
-    auto shapeNumber = shapeIndexArray[0];
-
-    if (shapeNumber == 1)
-    {
-        // s shape
-        SShape *a = new SShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (shapeNumber == 2)
-    {
-        // L shape
-        LShape *a = new LShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (shapeNumber == 3)
-    {
-        // | shape
-        StShape *a = new StShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (shapeNumber == 4)
-    {
-        // o shape
-        SqShape *a = new SqShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (shapeNumber == 5)
-    {
-        // T shape
-        TShape *a = new TShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (shapeNumber == 6)
-    {
-        // bomb shape
-        BombShape *a = new BombShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
+    return getNumberMappedShape(shapeIndexArray[0], position, dCont);
 }
 
 void ShapeGenerator::generateShapes()
@@ -128,52 +95,9 @@ void ShapeGenerator::generateShapes()
     }
 }
 
-IShape* ShapeGenerator::getNewAddedShape(sf::Vector2f position, DisplayContainer *dCont) const
+IShape* ShapeGenerator::getNewAddedShape(sf::Vector2f position, DisplayContainer *dCont)
 {
-    if (lastAllowedShape == 1)
-    {
-        // s shape
-        SShape *a = new SShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (lastAllowedShape == 2)
-    {
-        // L shape
-        LShape *a = new LShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (lastAllowedShape == 3)
-    {
-        // | shape
-        StShape *a = new StShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (lastAllowedShape == 4)
-    {
-        // o shape
-        SqShape *a = new SqShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (lastAllowedShape == 5)
-    {
-        // T shape
-        TShape *a = new TShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-    else if (lastAllowedShape == 6)
-    {
-        // bomb shape
-        BombShape *a = new BombShape(dCont);
-        a->setPosition(position);
-        return a;
-    }
-
-
+    return getNumberMappedShape(lastAllowedShape, position, dCont);
 }
 
 void ShapeGenerator::setAllowedShapesCount(unsigned int cnt)
