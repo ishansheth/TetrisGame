@@ -113,17 +113,11 @@ class BombShape : public BaseShape
         if (rectangle5 != nullptr)
         {
             auto p5 = rectangle5->getPosition() + shapeVelocity;
-
-            if (isWithinDrawWindow(p5, BOMB_SQUARE_SIDE_LENGTH) && !dContainer->isIntersecting(p5, this))
             {
                 rectangle5->move(shapeVelocity);
                 // shift the center
                 shapeCenter += shapeVelocity;
                 movestatus = true;
-            }
-            else
-            {
-                isMoving = false;
             }
         }
 

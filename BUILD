@@ -38,7 +38,8 @@ cc_binary(
     ],
     defines = [
         'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
-        'TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
+        'BRICK_TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
+        'TETRIS_POSTER_TEXTURE_FILE_PATH="/TetrisGame/resources/textures/tetris_poster.png"',
         'BOMB_IMAGE="/TetrisGame/resources/textures/bomb_texture.png"',
         'SOUND_FOLDER_PATH="/TetrisGame/resources/sounds/"',
         'META_DATA_FILE_PATH="/TetrisGame/resources/files/"',

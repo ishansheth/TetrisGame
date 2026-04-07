@@ -27,6 +27,7 @@ void setupSignalHandlers()
     std::signal(SIGTERM, handleSignal); // kill command
 }
 
+
 int main () 
 {
     setupSignalHandlers();
@@ -41,9 +42,12 @@ int main ()
     // StageManager sMgr(fontContainer, displayWindow);
     bool gamePause = false;
 
+    displayContainer.showGamePoster(displayWindow);
+    displayContainer.showInstructionScreen(displayWindow);
     displayContainer.showCurrentStageScreen(displayWindow);
 
-    while (displayWindow.isOpen ()) {
+    while (displayWindow.isOpen ()) 
+    {
         sf::Event event;
 
         while (displayWindow.pollEvent (event)) {

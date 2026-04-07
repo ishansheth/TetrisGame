@@ -33,7 +33,7 @@ class BaseShape : public IShape
           rectangle4(new sf::RectangleShape())
     {
         shapeVelocity = sf::Vector2f(SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
-        shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(TEXTURE_FILE_PATH)),
+        shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(BRICK_TEXTURE_FILE_PATH)),
                                   sf::IntRect({0, 0}, {32, 32}));
         isMoving = true;
         isBroken = false;

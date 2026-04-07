@@ -1,11 +1,12 @@
 #include "FontContainer.h"
+#include <iostream>
 
 FontContainer::FontContainer()
 {
     static_assert(static_cast<int>(GameFontStrings::NEXT_SHAPE_LABEL) == 0,
                 "GameFontStrings must start at zero");
     static_assert(static_cast<int>(GameFontStrings::MAXIMUM_NUMBER_OF_FONTS) ==
-                static_cast<int>(GameFontStrings::WINDOW_CLOSE_HIGHSCORE_SAVED) + 1,
+                static_cast<int>(GameFontStrings::FLOOR_RAISE_INSTRUCTION) + 1,
                 "GameFontStrings must remain contiguous");
 
 
@@ -27,7 +28,7 @@ void FontContainer::addFont(const GameFontStrings& fontKey)
     fContainer[fontKey] = sf::Text();
     fContainer[fontKey].setFont(gameFont);
     // since fontKeyToStrings and stringToLocation are const map, operator[] can not be used to access the key,value
-    // instead use at funtion of std::map, which throws exception
+    // instead use "at" funtion of std::map, which throws exception
     fContainer[fontKey].setString(fontKeyToStrings.at(fontKey));
     fContainer[fontKey].setCharacterSize(FONT_SIZE);
     fContainer[fontKey].setFillColor(sf::Color::White);
