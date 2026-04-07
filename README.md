@@ -6,6 +6,7 @@
 - save the high score. max 5 highscore with name is saved
 
 # Sample Game Play
+![Game Play](https://github.com/ishansheth/TetrisGame/blob/main/game_with_poster.gif)
 
 ![Game Play](https://github.com/ishansheth/TetrisGame/blob/main/game_play.gif)
 ![Game Play](https://github.com/ishansheth/TetrisGame/blob/main/game_play_2.gif)
