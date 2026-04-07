@@ -57,7 +57,7 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
 
     posterRectangle.setSize(sf::Vector2f(280,75));
     posterRectangle.setTexture(&tetrisPosterTexture);
-    posterRectangle.setPosition(sf::Vector2f(150.f,150.f));
+    posterRectangle.setPosition(sf::Vector2f(200.f,250.f));
 
     setParamtersForCurrentStage();
 
@@ -1283,7 +1283,7 @@ void DisplayContainer::showGamePoster(sf::RenderWindow & displayWindow)
     // display
     displayWindow.display();
     // wait
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     // clear
     displayWindow.clear(sf::Color::Black);
 
