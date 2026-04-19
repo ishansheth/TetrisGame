@@ -1,0 +1,30 @@
+name: Build TetrisGame (Bazel)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsfml-dev
+        sudo apt-get install -y curl
+        curl -LO "https://github.com/bazelbuild/bazel/releases/download/7.0.0/bazel-7.0.0-linux-x86_64"
+        chmod +x bazel-7.0.0-linux-x86_64
+        sudo mv bazel-7.0.0-linux-x86_64 /usr/local/bin/bazel
+
+    - name: Build with Bazel
+      run: bazel build //...
+
+    - name: List build output
+      run: ls -l bazel-bin
