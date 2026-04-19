@@ -28,3 +28,9 @@ jobs:
 
     - name: List build output
       run: ls -l bazel-bin
+
+    - name: Upload Release Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tetrisgame-binaries
+        path: bazel-bin/      
