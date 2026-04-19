@@ -28,25 +28,28 @@ DisplayContainer::DisplayContainer(FontContainer &fCon, ShapeGenerator &shapegen
         xval += SQUARE_SIDE_LENGTH_WITH_OUTLINE;
     }
 
-    if (!shapeSettleSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
-                                             std::string(BLIP_SOUND_FILE_NAME)))
+    const char* resourceRoot = std::getenv("TETRISGAME_RESOURCES");
+    std::string blipSoundPath = std::string(resourceRoot ? resourceRoot : ".") + "/sounds/hitHurt.wav";
+    std::string explosionSoundPath = std::string(resourceRoot ? resourceRoot : ".") + "/sounds/explosion.wav";
+    std::string bombExplosionSoundPath = std::string(resourceRoot ? resourceRoot : ".") + "/sounds/bomb_explosion.wav";
+    std::string tetrisPosterPath = std::string(resourceRoot ? resourceRoot : ".") + "/textures/tetris_poster.png";
+
+    if (!shapeSettleSoundBuffer.loadFromFile(blipSoundPath))
     {
-        std::cout << "Could not load blip-131856.wav file" << std::endl;
+        std::cout << "Could not load hitHurt.wav file" << std::endl;
     }
 
-    if (!rowRemovedExplosionSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
-                                                     std::string(EXPLOSION_SOUND_FILE_NAME)))
+    if (!rowRemovedExplosionSoundBuffer.loadFromFile(explosionSoundPath))
     {
-        std::cout << "Could not load blip-131856.wav file" << std::endl;
+        std::cout << "Could not load explosion.wav file" << std::endl;
     }
 
-    if (!bombExplosionSoundBuffer.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(SOUND_FOLDER_PATH)) +
-                                               std::string(BOMB_EXPLOSION_SOUND_FILE_NAME)))
+    if (!bombExplosionSoundBuffer.loadFromFile(bombExplosionSoundPath))
     {
         std::cout << "Could not load bomb_explosion.wav file" << std::endl;
     }
 
-    if(!tetrisPosterTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(TETRIS_POSTER_TEXTURE_FILE_PATH))))
+    if(!tetrisPosterTexture.loadFromFile(tetrisPosterPath))
     {
         std::cout << "Could not load tetris_poster.png file" << std::endl;    
     }
@@ -1282,6 +1285,12 @@ void DisplayContainer::showGamePoster(sf::RenderWindow & displayWindow)
 
     // display
     displayWindow.display();
+
+    sf::Texture screenshotTexture;
+    screenshotTexture.create(displayWindow.getSize().x, displayWindow.getSize().y);
+    screenshotTexture.update(displayWindow);
+    screenshotTexture.copyToImage().saveToFile("screenshot.png");
+
     // wait
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
     // clear

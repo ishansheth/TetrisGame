@@ -10,8 +10,10 @@ FontContainer::FontContainer()
                 "GameFontStrings must remain contiguous");
 
 
-    std::string fontFilePath = std::getenv("HOME") + std::string(TOSTRINGYFY(FONTS_FILE_PATH));
-    gameFont.loadFromFile(fontFilePath);
+    const char* resourceRoot = std::getenv("TETRISGAME_RESOURCES");
+    std::string fontPath = std::string(resourceRoot ? resourceRoot : ".") + "/fonts/yourfont.ttf";
+
+    gameFont.loadFromFile(fontPath);
 }
 
 void FontContainer::initializeFontContainer()

@@ -33,8 +33,10 @@ class BaseShape : public IShape
           rectangle4(new sf::RectangleShape())
     {
         shapeVelocity = sf::Vector2f(SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
-        shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(BRICK_TEXTURE_FILE_PATH)),
-                                  sf::IntRect({0, 0}, {32, 32}));
+
+        const char* resourceRoot = std::getenv("TETRISGAME_RESOURCES");
+        std::string brickTexturePath = std::string(resourceRoot ? resourceRoot : ".") + "/textures/brick_texture.png";
+        shapeTexture.loadFromFile(brickTexturePath,sf::IntRect({0, 0}, {32, 32}));
         isMoving = true;
         isBroken = false;
 

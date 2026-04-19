@@ -17,7 +17,10 @@ class BombShape : public BaseShape
         rectangle5(new sf::RectangleShape()) 
     {
         shapeVelocity = sf::Vector2f(SHAPE_DOWN_FALL_SPEED_X, SHAPE_DOWN_FALL_SPEED_Y);
-        shapeTexture.loadFromFile(std::getenv("HOME") + std::string(TOSTRINGYFY(BOMB_IMAGE)));
+
+        const char* resourceRoot = std::getenv("TETRISGAME_RESOURCES");
+        std::string bombTexturePath = std::string(resourceRoot ? resourceRoot : ".") + "/textures/bomb_texture.png";
+        shapeTexture.loadFromFile(bombTexturePath);
 
         isMoving = true;
 

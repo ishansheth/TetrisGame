@@ -1,5 +1,16 @@
 load("@rules_cc//cc:defs.bzl","cc_binary")
 
+filegroup(
+    name = "resources",
+    srcs = glob([
+        "resources/fonts/**",
+        "resources/textures/**",
+        "resources/sounds/**",
+        "resources/files/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
 cc_binary(
     name = "tetris",
     includes = ["include"],
@@ -36,8 +47,9 @@ cc_binary(
         "-lsfml-audio",
         "-lpthread"
     ],
+    data = [":resources"],
     defines = [
-        'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar Text Regular.ttf"',
+        'FONTS_FILE_PATH="/TetrisGame/resources/fonts/Movistar_Text_Regular.ttf"',
         'BRICK_TEXTURE_FILE_PATH="/TetrisGame/resources/textures/brick_texture.png"',
         'TETRIS_POSTER_TEXTURE_FILE_PATH="/TetrisGame/resources/textures/tetris_poster.png"',
         'BOMB_IMAGE="/TetrisGame/resources/textures/bomb_texture.png"',

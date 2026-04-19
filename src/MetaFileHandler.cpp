@@ -47,8 +47,9 @@ void MetaFileHandler::updateNewHighScore(unsigned int score, const std::string& 
 
 void MetaFileHandler::readMetaDataFile()
 {
+    const char* resourceRoot = std::getenv("TETRISGAME_RESOURCES");
     metadataFile =
-        std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH)) + std::string(META_DATA_FILE_NAME);
+        std::string(resourceRoot ? resourceRoot : ".") + std::string("/files/") + std::string(META_DATA_FILE_NAME);
     bool fileexist = std::filesystem::exists(metadataFile);
     if (fileexist)
     {
@@ -101,7 +102,7 @@ void MetaFileHandler::readMetaDataFile()
     }
     else
     {
-        auto dirPath = std::getenv("HOME") + std::string(TOSTRINGYFY(META_DATA_FILE_PATH));
+        auto dirPath = std::string(resourceRoot ? resourceRoot : ".") + std::string("/files/");
         if (mkdir(dirPath.c_str(), 0755) != 0 && errno != EEXIST) {
             std::cerr << "Failed to create directory: " << dirPath << " - " << strerror(errno) << std::endl;
         }
